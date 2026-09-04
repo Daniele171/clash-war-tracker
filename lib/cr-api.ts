@@ -1,6 +1,6 @@
 import { env } from 'process';
 
-const CR_API_URL = 'https://api.clashroyale.com/v1';
+const CR_API_URL = 'https://proxy.royaleapi.dev/v1';
 
 async function fetchCR(endpoint: string) {
   const token = process.env.CR_API_KEY;
