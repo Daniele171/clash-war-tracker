@@ -13,7 +13,8 @@ export async function GET() {
     const dbMembers = await getMembers();
     
     const history = log.items.map((item: any) => {
-      const ourClan = item.standings.find((s: any) => s.clan.tag === tag.toUpperCase() || s.clan.tag === `#${tag.toUpperCase()}`);
+      const cleanTag = tag.startsWith('#') ? tag.toUpperCase() : '#' + tag.toUpperCase();
+      const ourClan = item.standings.find((s: any) => s.clan.tag === cleanTag);
       
       if (!ourClan) return null;
       
