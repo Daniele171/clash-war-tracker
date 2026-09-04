@@ -1,4 +1,6 @@
-import { createClient } from 'redis';
+import os
+
+content = """import { createClient } from 'redis';
 
 // Vercel Upstash Redis Integration generates REDIS_URL
 let redisClient: any = null;
@@ -119,3 +121,7 @@ export async function removeExcuse(tag: string) {
   }
   return false;
 }
+"""
+
+with open('/Users/daniele/Desktop/clash-war-tracker-v2/lib/db.ts', 'w') as f:
+    f.write(content)
