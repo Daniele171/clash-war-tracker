@@ -80,7 +80,7 @@ export async function GET(request: Request) {
     }
 
     // 5. Build and save new live snapshot
-    const newSnapshot = buildWarSnapshot(race, false, existingExcuses);
+    const newSnapshot = buildWarSnapshot(race, apiMembers, false, existingExcuses);
     await saveLiveWar(newSnapshot);
 
     return NextResponse.json({ 

@@ -40,7 +40,7 @@ export function determineStatus(decksUsedToday: number, isWarDay: boolean, isDay
   return 'pending'; // Day is still ongoing
 }
 
-export function buildWarSnapshot(race: CRRiverRace, isDayClosed = false, existingExcuses: Record<string, string> = {}): WarSnapshot {
+export function buildWarSnapshot(race: CRRiverRace, allMembers: any[], isDayClosed = false, existingExcuses: Record<string, string> = {}): WarSnapshot {
   const isWarDay = race.periodType === 'combat';
   // Battle day 1-4 based on periodIndex (which goes 0-6).
   // Assuming 0,1,2 = training, 3,4,5,6 = combat (battleDay 1,2,3,4)
@@ -52,21 +52,24 @@ export function buildWarSnapshot(race: CRRiverRace, isDayClosed = false, existin
     battleDay: battleDay > 0 ? battleDay : 1, // Fallback to 1 if not combat
     periodType: race.periodType,
     timestamp: new Date().toISOString(),
-    participants: race.clan.participants.map(p => {
-      let status = determineStatus(p.decksUsedToday, isWarDay, isDayClosed);
+    participants: allMembers.map((member: any) => {
+      const p = (race.clan.participants || []).find((rp: any) => rp.tag === member.tag);
+      const decksUsedToday = p ? p.decksUsedToday : 0;
+      const medals = p ? (p.medals || p.fame || 0) : 0;
       
-      // Override with excuse if exists
-      if (existingExcuses[p.tag]) {
+      let status = determineStatus(decksUsedToday, isWarDay, isDayClosed);
+      
+      if (existingExcuses[member.tag]) {
         status = 'excused';
       }
       
       return {
-        tag: p.tag,
-        name: p.name,
-        medals: p.medals || p.fame || 0, // Fallback for older API versions
-        decksUsedToday: p.decksUsedToday,
+        tag: member.tag,
+        name: member.name,
+        medals,
+        decksUsedToday,
         status,
-        excuseReason: existingExcuses[p.tag]
+        excuseReason: existingExcuses[member.tag]
       };
     })
   };
