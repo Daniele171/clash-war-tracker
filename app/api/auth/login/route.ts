@@ -1,12 +1,15 @@
 import { NextResponse } from 'next/server';
 import { getUserByEmail, verifyPassword } from '@/lib/users';
+import { verifyOTP } from '@/lib/email';
 import { createSessionToken, sessionCookieOptions } from '@/lib/auth';
 
 export async function POST(request: Request) {
   try {
-    const { email, password } = await request.json();
-    if (!email || !password) {
-      return NextResponse.json({ error: 'Email e password obbligatorie' }, { status: 400 });
+    const body = await request.json();
+    const { email, password, otp } = body;
+
+    if (!email) {
+      return NextResponse.json({ error: 'Email obbligatoria' }, { status: 400 });
     }
 
     const user = await getUserByEmail(email);
@@ -14,9 +17,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Credenziali non valide' }, { status: 401 });
     }
 
-    const valid = await verifyPassword(password, user.passwordHash);
-    if (!valid) {
-      return NextResponse.json({ error: 'Credenziali non valide' }, { status: 401 });
+    // --- Admin: password login ---
+    if (user.role === 'admin') {
+      if (!password) {
+        return NextResponse.json({ error: 'Password obbligatoria per gli admin' }, { status: 400 });
+      }
+      const valid = await verifyPassword(password, user.passwordHash);
+      if (!valid) {
+        return NextResponse.json({ error: 'Credenziali non valide' }, { status: 401 });
+      }
+    } else {
+      // --- Member: OTP login ---
+      if (!otp) {
+        return NextResponse.json({ error: 'Codice OTP obbligatorio' }, { status: 400 });
+      }
+      const valid = await verifyOTP(email, otp);
+      if (!valid) {
+        return NextResponse.json({ error: 'Codice non valido o scaduto' }, { status: 401 });
+      }
     }
 
     const token = await createSessionToken({
