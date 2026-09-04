@@ -12,14 +12,30 @@ export default function WarTab() {
     fetch('/api/wars')
       .then(r => r.json())
       .then(d => {
-        setData(d.status ? null : d);
+        setData(d);
+        setLoading(false);
+      })
+      .catch(e => {
+        setData({ error: e.message });
         setLoading(false);
       });
   }, []);
 
   if (loading) return <div className="text-center py-20 text-[#8888a8]">Caricamento...</div>;
 
-  if (!data) return (
+  if (data?.error) return (
+    <div className="text-center py-12 px-6 bg-[rgba(220,38,38,0.1)] border border-red-500 rounded-xl">
+      <div className="text-[48px] mb-4 block">🚨</div>
+      <div className="font-rajdhani text-[20px] font-bold text-red-400 mb-2">Errore di Sistema</div>
+      <div className="text-[13px] text-red-300 mb-4">{data.error}</div>
+      <div className="text-[12px] text-[#8888a8]">
+        Controlla le variabili d'ambiente su Vercel. Se l'errore dice "KV_REST_API_URL", 
+        significa che il database non ha iniettato il nome corretto.
+      </div>
+    </div>
+  );
+
+  if (!data || data.status) return (
     <div className="text-center py-12 px-6 text-[#8888a8]">
       <span className="text-[48px] mb-4 opacity-50 block">🏁</span>
       <div className="font-rajdhani text-[20px] font-bold text-[#f0f0ff] mb-2">Nessuna War Attiva</div>
@@ -30,18 +46,17 @@ export default function WarTab() {
     </div>
   );
 
-  const total = data.participants.length;
-  const participated = data.participants.filter((p: any) => p.decksUsedToday > 0).length;
-  const excusedCount = data.participants.filter((p: any) => p.status === 'excused').length;
-  const badCount = data.participants.filter((p: any) => p.status === 'absent' || p.status === 'pending').length;
-  const totalMedals = data.participants.reduce((s: number, p: any) => s + (p.medals || 0), 0);
+  const total = data.participants?.length || 0;
+  const participated = data.participants?.filter((p: any) => p.decksUsedToday > 0).length || 0;
+  const excusedCount = data.participants?.filter((p: any) => p.status === 'excused').length || 0;
+  const badCount = data.participants?.filter((p: any) => p.status === 'absent' || p.status === 'pending').length || 0;
+  const totalMedals = data.participants?.reduce((s: number, p: any) => s + (p.medals || 0), 0) || 0;
   
   const denominator = Math.max(total - excusedCount, 1);
   const rate = Math.round((participated / denominator) * 100);
   const rateColor = rate >= 80 ? '#4ade80' : rate >= 60 ? '#fb923c' : '#f87171';
 
-  // Sort: Medals DESC, then Decks DESC
-  const sorted = [...data.participants].sort((a, b) => {
+  const sorted = [...(data.participants || [])].sort((a, b) => {
     if (b.medals !== a.medals) return b.medals - a.medals;
     return b.decksUsedToday - a.decksUsedToday;
   });
@@ -49,8 +64,6 @@ export default function WarTab() {
   const handleExcuse = async (tag: string, name: string) => {
     const reason = prompt(`Giustifica ${name} per OGGI (opzionale):`);
     if (reason === null) return;
-    
-    // In a real app we would POST to an /api/excuse endpoint
     alert('Simulazione salvataggio giustificazione per: ' + name);
   };
 
@@ -78,7 +91,7 @@ export default function WarTab() {
       <div className="flex items-center justify-between flex-wrap gap-2.5 mb-3.5">
         <div>
           <div className="font-rajdhani text-[21px] font-bold">Giorno {data.battleDay} ({data.periodType === 'training' ? 'Allenamento' : 'Combattimento'})</div>
-          <div className="text-[12px] text-[#8888a8] mt-px">📅 Aggiornato: {format(new Date(data.timestamp), 'dd MMM HH:mm', { locale: it })}</div>
+          <div className="text-[12px] text-[#8888a8] mt-px">📅 Aggiornato: {data.timestamp ? format(new Date(data.timestamp), 'dd MMM HH:mm', { locale: it }) : ''}</div>
         </div>
         <div>
           <span className="badge bg-[rgba(37,99,235,0.15)] border-[rgba(37,99,235,0.4)] text-[#60a5fa]">🔥 LIVE</span>

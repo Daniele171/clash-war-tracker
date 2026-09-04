@@ -15,10 +15,11 @@ export default function ClanTab() {
       });
   }, []);
 
+  if (members.error) return <div>Errore Database: {members.error}</div>;
   if (loading) return <div className="text-center py-20 text-[#8888a8]">Caricamento...</div>;
 
-  const active = members.filter(m => m.active);
-  const inactive = members.filter(m => !m.active);
+  const active = (members || []).filter(m => m.active);
+  const inactive = (members || []).filter(m => !m.active);
 
   return (
     <>
