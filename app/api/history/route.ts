@@ -11,30 +11,79 @@ export async function GET() {
   try {
     const log = await getRiverRaceLog(tag);
     const dbMembers = await getMembers();
-    
+    const cleanTag = tag.startsWith('#') ? tag.toUpperCase() : '#' + tag.toUpperCase();
+
     const history = log.items.map((item: any) => {
-      const cleanTag = tag.startsWith('#') ? tag.toUpperCase() : '#' + tag.toUpperCase();
-      const ourClan = item.standings.find((s: any) => s.clan.tag === cleanTag);
-      
-      if (!ourClan) return null;
-      
+      let ourClanData: any = null;
+      let rank: number | null = null;
+      let trophyChange: number | null = null;
+
+      // === River Race (standard): has standings array with 5 clans ===
+      if (Array.isArray(item.standings) && item.standings.length > 0) {
+        const entry = item.standings.find(
+          (s: any) => s?.clan?.tag === cleanTag
+        );
+        if (entry) {
+          ourClanData = entry.clan;
+          rank = entry.rank ?? null;
+          trophyChange = entry.trophyChange ?? null;
+        }
+      }
+
+      // === Colosseum or alternate structure: clan might be at root level ===
+      if (!ourClanData && item.clan && item.clan.tag === cleanTag) {
+        ourClanData = item.clan;
+      }
+
+      // === Last fallback: search all possible nested paths ===
+      if (!ourClanData && item.clans) {
+        const found = (item.clans as any[]).find((c: any) => c?.tag === cleanTag);
+        if (found) ourClanData = found;
+      }
+
+      if (!ourClanData) {
+        // Log in dev so we can debug future unknown structures
+        console.warn(`History: could not find clan ${cleanTag} in item`, JSON.stringify(Object.keys(item)));
+        return null;
+      }
+
+      const participants = (ourClanData.participants || [])
+        .filter((p: any) => p.decksUsed > 0) // only those who actually played
+        .map((p: any) => {
+          const m = dbMembers.find(dbm => dbm.tag === p.tag);
+          return {
+            tag: p.tag,
+            name: p.name,
+            medals: p.fame || p.medals || 0,
+            decksUsed: p.decksUsed || 0,
+            role: m?.role || 'member'
+          };
+        });
+
+      // Also include current members who did 0 attacks (they won't be in participants)
+      const activeTags = new Set(participants.map((p: any) => p.tag));
+      const memberList = dbMembers.filter(m => m.active);
+      const absentees = memberList
+        .filter(m => !activeTags.has(m.tag))
+        .map(m => ({
+          tag: m.tag,
+          name: m.name,
+          medals: 0,
+          decksUsed: 0,
+          role: m.role
+        }));
+
       return {
         seasonId: item.seasonId,
         sectionIndex: item.sectionIndex,
         createdDate: item.createdDate,
+        isColosseum: !Array.isArray(item.standings) || item.standings.length === 0,
+        rank,
+        trophyChange,
         clan: {
-          tag: ourClan.clan.tag,
-          fame: ourClan.clan.fame,
-          participants: ourClan.clan.participants.map((p: any) => {
-            const m = dbMembers.find(dbm => dbm.tag === p.tag);
-            return {
-              tag: p.tag,
-              name: p.name,
-              medals: p.fame || p.medals,
-              decksUsed: p.decksUsed,
-              role: m?.role || 'Unknown'
-            };
-          })
+          tag: ourClanData.tag,
+          fame: ourClanData.fame || 0,
+          participants: [...participants, ...absentees]
         }
       };
     }).filter(Boolean);
