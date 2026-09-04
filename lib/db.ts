@@ -26,7 +26,7 @@ export interface WarSnapshot {
   seasonId: number;
   sectionIndex: number;
   battleDay: number;
-  periodType: 'training' | 'combat';
+  periodType: 'training' | 'combat' | 'colosseum';
   timestamp: string;
   participants: {
     tag: string;

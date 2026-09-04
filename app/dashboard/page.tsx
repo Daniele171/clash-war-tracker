@@ -90,7 +90,7 @@ export default function WarTab() {
 
       <div className="flex items-center justify-between flex-wrap gap-2.5 mb-3.5">
         <div>
-          <div className="font-rajdhani text-[21px] font-bold">Giorno {data.battleDay} ({data.periodType === 'training' ? 'Allenamento' : 'Combattimento'})</div>
+          <div className="font-rajdhani text-[21px] font-bold">Giorno {data.battleDay} ({data.periodType === 'training' ? 'Allenamento' : data.periodType === 'colosseum' ? 'Colosseo' : 'Combattimento'})</div>
           <div className="text-[12px] text-[#8888a8] mt-px">📅 Aggiornato: {data.timestamp ? format(new Date(data.timestamp), 'dd MMM HH:mm', { locale: it }) : ''}</div>
         </div>
         <div>
@@ -147,7 +147,7 @@ export default function WarTab() {
                     </td>
                     <td className="px-3 py-2.5">
                       <div className="font-rajdhani font-bold text-[14px] text-cr-gold">{p.decksUsedTotal || p.decksUsedToday || 0} <span className="text-[10px] font-sans text-[#8888a8] font-normal">atk</span></div>
-                      {p.decksUsedTotal < (data.battleDay * 4) && data.periodType === 'combat' && (
+                      {p.decksUsedTotal < (data.battleDay * 4) && (data.periodType === 'combat' || data.periodType === 'colosseum') && (
                         <div className="text-[10px] text-red-400 mt-[2px] leading-tight">Ha saltato<br/>delle war!</div>
                       )}
                     </td>
