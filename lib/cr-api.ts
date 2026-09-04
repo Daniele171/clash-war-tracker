@@ -1,4 +1,4 @@
-import { env } from 'process';
+// cr-api.ts
 
 const CR_API_URL = 'https://proxy.royaleapi.dev/v1';
 
@@ -48,5 +48,5 @@ export async function getCurrentRiverRace(tag: string) {
 
 export async function getRiverRaceLog(tag: string) {
   const formattedTag = encodeURIComponent(formatTag(tag));
-  return fetchCR(`/clans/${formattedTag}/riverracelog`);
+  return fetchCR(`/clans/${formattedTag}/riverracelog?limit=20`);
 }
