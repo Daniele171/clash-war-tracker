@@ -34,7 +34,7 @@ export async function GET(request: Request) {
     });
     // Mark missing as inactive
     dbMembers.forEach(dbm => {
-      if (!updatedMembers.find(um => um.tag === dbm.tag)) {
+      if (!updatedMembers.find((um: any) => um.tag === dbm.tag)) {
         updatedMembers.push({ ...dbm, active: false });
       }
     });

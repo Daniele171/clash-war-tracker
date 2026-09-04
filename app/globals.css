@@ -1,6 +1,28 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-bg-0: #080815;
+  --color-bg-1: #0f0f20;
+  --color-bg-2: #1a1a30;
+  --color-bg-card: rgba(255,255,255,0.04);
+  --color-bg-card-h: rgba(255,255,255,0.07);
+
+  --color-cr-gold: #f0c030;
+  --color-cr-purple: #7c3aed;
+  --color-cr-blue: #2563eb;
+  --color-cr-red: #dc2626;
+  --color-cr-green: #16a34a;
+  --color-cr-orange: #ea580c;
+  --color-cr-yellow: #d97706;
+
+  --color-border-gold: rgba(240,192,48,0.18);
+  --color-border-gold-strong: rgba(240,192,48,0.5);
+
+  --font-rajdhani: var(--font-rajdhani), sans-serif;
+  --font-outfit: var(--font-outfit), sans-serif;
+  
+  --shadow-glow-gold: 0 0 24px rgba(240,192,48,0.22);
+}
 
 @layer components {
   .btn {
