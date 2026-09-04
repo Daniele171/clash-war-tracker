@@ -19,7 +19,7 @@ export default function HistoryTab() {
 
   if (loading) return <div className="text-center py-20 text-[#8888a8]">Caricamento...</div>;
 
-  if (history.error) return <div>Errore Database: {history.error}</div>;
+  if ((history as any).error) return <div>Errore Database: {(history as any).error}</div>;
   if (history.length === 0) return (
     <div className="text-center py-12 px-6 text-[#8888a8]">
       <div className="text-[48px] mb-4 opacity-50 block">📊</div>
