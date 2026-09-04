@@ -4,6 +4,18 @@ import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
 
+
+// Parse CR API date format like '20260831T095606.000Z' -> proper Date
+function parseCRDate(dateStr: string): Date {
+  if (!dateStr) return new Date();
+  try {
+    // Match YYYYMMDDTHHMMSS.sssZ
+    const m = dateStr.match(/^(d{4})(d{2})(d{2})T(d{2})(d{2})(d{2})/);
+    if (m) return new Date(`${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}.000Z`);
+    return new Date(dateStr);
+  } catch { return new Date(); }
+}
+
 export default function HistoryTab() {
   const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -80,7 +92,7 @@ export default function HistoryTab() {
                         )}
                       </div>
                       <div className="text-[12px] text-[#8888a8] mt-0.5 flex items-center gap-3 flex-wrap">
-                        <span>📅 {format(new Date(war.createdDate.replace('T', ' ').replace('.000Z', '')), 'dd MMM yyyy', { locale: it })}</span>
+                        <span>📅 {format(parseCRDate(war.createdDate), 'dd MMM yyyy', { locale: it })}</span>
                         {war.rank && <span>🏆 #{war.rank} posto</span>}
                         {war.trophyChange != null && (
                           <span className={war.trophyChange >= 0 ? 'text-green-400' : 'text-red-400'}>
