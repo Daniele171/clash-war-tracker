@@ -11,15 +11,13 @@ export default function HistoryTab() {
   const [currentWar, setCurrentWar] = useState<any>(null);
 
   useEffect(() => {
-    // Load history AND current live war info
-    Promise.all([
-      fetch('/api/history').then(r => r.json()),
-      fetch('/api/wars').then(r => r.json()),
-    ]).then(([hist, live]) => {
+    const fetchHistory = fetch('/api/history').then(r => r.json()).catch(() => []);
+    const fetchLive = fetch('/api/wars').then(r => r.json()).catch(() => null);
+    Promise.all([fetchHistory, fetchLive]).then(([hist, live]) => {
       setHistory(Array.isArray(hist) ? hist : []);
-      if (live && !live.error) setCurrentWar(live);
+      if (live && live.seasonId != null && !live.error && !live.status) setCurrentWar(live);
       setLoading(false);
-    });
+    }).catch(() => setLoading(false));
   }, []);
 
   if (loading) return <div className="text-center py-20 text-[#8888a8]">Caricamento...</div>;
