@@ -30,14 +30,25 @@ export async function updateSession(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   const { pathname } = request.nextUrl
 
-  if (!user && !pathname.startsWith('/login') && !pathname.startsWith('/api/sync') && !pathname.startsWith('/auth')) {
+
+  // Ignore /api routes for redirection (except if you want to block API, but usually middleware for pages)
+  if (pathname.startsWith('/api')) return supabaseResponse;
+
+  if (!user && !pathname.startsWith('/login')) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
   }
 
-  // If user is logged in, and tries to go to login page, redirect to dashboard
-  if (user && pathname === '/login') {
+  // Force password change if needed
+  if (user && user.user_metadata?.must_change_password && !pathname.startsWith('/change-password') && pathname !== '/login') {
+    const url = request.nextUrl.clone()
+    url.pathname = '/change-password'
+    return NextResponse.redirect(url)
+  }
+
+  // Redirect away from login or change-password if already set up
+  if (user && (pathname === '/login' || (pathname === '/change-password' && !user.user_metadata?.must_change_password))) {
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
     return NextResponse.redirect(url)

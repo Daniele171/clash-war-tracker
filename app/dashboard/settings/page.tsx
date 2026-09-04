@@ -114,12 +114,12 @@ export default function SettingsTab() {
                   value={newRole}
                   onChange={e => {
                     setNewRole(e.target.value as 'viewer' | 'admin');
-                    if (e.target.value === 'viewer') setNewPassword('');
+                    
                   }}
                   className="bg-[#0c0c1c] border border-border-gold rounded-lg px-3 py-2 text-[13px] text-white focus:outline-none focus:border-cr-gold transition-colors"
                 >
-                  <option value="viewer">👤 Membro (Login con OTP)</option>
-                  <option value="admin">👑 Admin (Login con Password)</option>
+                  <option value="viewer">👤 Membro</option>
+                  <option value="admin">👑 Admin</option>
                 </select>
                 <button
                   type="submit"

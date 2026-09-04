@@ -37,16 +37,19 @@ export async function POST(request: Request) {
 
   try {
     const { email, password, role } = await request.json()
-    if (!email) {
-      return NextResponse.json({ error: 'Email obbligatoria' }, { status: 400 })
+    if (!email || !password) {
+      return NextResponse.json({ error: 'Email e Password sono obbligatorie' }, { status: 400 })
     }
 
     const adminAuthClient = createAdminClient()
     const { data, error } = await adminAuthClient.auth.admin.createUser({
       email,
-      password: password || undefined,
-      email_confirm: true, // auto-confirm
-      user_metadata: { role: role || 'viewer' }
+      password: password,
+      email_confirm: true,
+      user_metadata: { 
+        role: role || 'viewer',
+        must_change_password: true // Forza il cambio al primo accesso
+      }
     })
 
     if (error) throw error
