@@ -1,24 +1,4 @@
-import { createClient } from 'redis';
-
-// Vercel Upstash Redis Integration generates REDIS_URL
-let redisClient: any = null;
-
-async function getRedis() {
-  if (!redisClient) {
-    redisClient = createClient({
-      url: process.env.REDIS_URL || process.env.KV_REST_API_URL || ''
-    });
-    redisClient.on('error', (err: any) => {
-      console.error('Redis Client Error', err);
-      // Reset on fatal errors so next call reconnects
-      redisClient = null;
-    });
-    await redisClient.connect();
-  } else if (!redisClient.isOpen) {
-    try { await redisClient.connect(); } catch {}
-  }
-  return redisClient;
-}
+import { kv } from '@vercel/kv';
 
 export interface ClanMember {
   tag: string;
@@ -53,21 +33,26 @@ const KEYS = {
 
 export async function getJson(key: string) {
   try {
-    const client = await getRedis();
-    const val = await client.get(key);
-    return val ? JSON.parse(val) : null;
+    const val = await kv.get(key);
+    if (typeof val === 'string') {
+      try {
+        return JSON.parse(val);
+      } catch (e) {
+        return val;
+      }
+    }
+    return val;
   } catch (e) {
-    console.error('Redis get error', e);
+    console.error('KV get error', e);
     return null;
   }
 }
 
 export async function setJson(key: string, value: any) {
   try {
-    const client = await getRedis();
-    await client.set(key, JSON.stringify(value));
+    await kv.set(key, value);
   } catch (e) {
-    console.error('Redis set error', e);
+    console.error('KV set error', e);
   }
 }
 
