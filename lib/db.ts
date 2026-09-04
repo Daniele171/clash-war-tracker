@@ -33,6 +33,7 @@ export interface WarSnapshot {
     name: string;
     medals: number;
     decksUsedToday: number;
+    decksUsedTotal: number;
     status: 'ok' | 'partial' | 'absent' | 'pending' | 'excused';
     excuseReason?: string;
   }[];

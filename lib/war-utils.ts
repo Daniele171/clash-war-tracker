@@ -55,6 +55,7 @@ export function buildWarSnapshot(race: CRRiverRace, allMembers: any[], isDayClos
     participants: allMembers.map((member: any) => {
       const p = (race.clan.participants || []).find((rp: any) => rp.tag === member.tag);
       const decksUsedToday = p ? p.decksUsedToday : 0;
+      const decksUsedTotal = p ? p.decksUsed : 0;
       const medals = p ? (p.medals || p.fame || 0) : 0;
       
       let status = determineStatus(decksUsedToday, isWarDay, isDayClosed);
@@ -68,6 +69,7 @@ export function buildWarSnapshot(race: CRRiverRace, allMembers: any[], isDayClos
         name: member.name,
         medals,
         decksUsedToday,
+        decksUsedTotal,
         status,
         excuseReason: existingExcuses[member.tag]
       };

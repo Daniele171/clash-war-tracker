@@ -106,7 +106,8 @@ export default function WarTab() {
                 <th className="bg-[rgba(240,192,48,0.07)] text-[#8888a8] text-[10px] font-semibold uppercase tracking-wider px-3 py-2 text-left border-b border-border-gold">#</th>
                 <th className="bg-[rgba(240,192,48,0.07)] text-[#8888a8] text-[10px] font-semibold uppercase tracking-wider px-3 py-2 text-left border-b border-border-gold">Giocatore</th>
                 <th className="bg-[rgba(240,192,48,0.07)] text-[#8888a8] text-[10px] font-semibold uppercase tracking-wider px-3 py-2 text-left border-b border-border-gold">🏅 Medaglie</th>
-                <th className="bg-[rgba(240,192,48,0.07)] text-[#8888a8] text-[10px] font-semibold uppercase tracking-wider px-3 py-2 text-left border-b border-border-gold">Attacchi Oggi</th>
+                <th className="bg-[rgba(240,192,48,0.07)] text-[#8888a8] text-[10px] font-semibold uppercase tracking-wider px-3 py-2 text-left border-b border-border-gold">Oggi</th>
+                <th className="bg-[rgba(240,192,48,0.07)] text-[#8888a8] text-[10px] font-semibold uppercase tracking-wider px-3 py-2 text-left border-b border-border-gold">Totali in settimana</th>
                 <th className="bg-[rgba(240,192,48,0.07)] text-[#8888a8] text-[10px] font-semibold uppercase tracking-wider px-3 py-2 text-left border-b border-border-gold">Stato</th>
                 <th className="bg-[rgba(240,192,48,0.07)] text-[#8888a8] text-[10px] font-semibold uppercase tracking-wider px-3 py-2 text-left border-b border-border-gold">Azioni</th>
               </tr>
@@ -143,6 +144,12 @@ export default function WarTab() {
                           <div key={dot} className={`w-[9px] h-[9px] rounded-full ${dot < p.decksUsedToday ? 'bg-cr-green' : 'bg-[#444466]'}`} />
                         ))}
                       </div>
+                    </td>
+                    <td className="px-3 py-2.5">
+                      <div className="font-rajdhani font-bold text-[14px] text-cr-gold">{p.decksUsedTotal || p.decksUsedToday || 0} <span className="text-[10px] font-sans text-[#8888a8] font-normal">atk</span></div>
+                      {p.decksUsedTotal < (data.battleDay * 4) && data.periodType === 'combat' && (
+                        <div className="text-[10px] text-red-400 mt-[2px] leading-tight">Ha saltato<br/>delle war!</div>
+                      )}
                     </td>
                     <td className="px-3 py-2.5">
                       <span className={`badge ${badgeClass}`}>{badgeLabel}</span>
