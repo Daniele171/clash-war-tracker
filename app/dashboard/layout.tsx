@@ -9,13 +9,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [isSyncing, setIsSyncing] = useState(false);
 
   const handleSync = async () => {
+    const pwd = prompt('Inserisci la password (CRON_SECRET) per forzare la sincronizzazione:');
+    if (!pwd) return;
     setIsSyncing(true);
     try {
-      const res = await fetch('/api/sync');
+      const res = await fetch('/api/sync', {
+        headers: { 'Authorization': `Bearer ${pwd}` }
+      });
       if (res.ok) {
         window.location.reload();
       } else {
-        alert('Errore durante la sincronizzazione (Configura prima le chiavi in Config)');
+        const data = await res.json().catch(() => ({}));
+        alert('Errore: ' + (data.error || 'Password errata o server non configurato'));
       }
     } catch (e) {
       alert('Errore di rete');
