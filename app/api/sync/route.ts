@@ -58,21 +58,29 @@ export async function GET(request: Request) {
     }
 
     // 4. Determine if day just closed
-    // A new day is triggered if the periodIndex changes
+    const isWarPeriod = race.periodType === 'combat' || race.periodType === 'colosseum';
+    const dayOfWeek = race.periodIndex % 7;
+    const currentBattleDay = isWarPeriod && dayOfWeek >= 3 ? (dayOfWeek - 3) + 1 : 0;
     const previousPeriod = liveWar ? liveWar.battleDay : -1;
-    const currentBattleDay = race.periodType === 'combat' ? (race.periodIndex - 3) + 1 : 0;
-    const dayChanged = liveWar && previousPeriod !== -1 && previousPeriod !== currentBattleDay;
+    const previousSeason = liveWar ? liveWar.seasonId : -1;
+    // dayChanged = same season, both war days, day number actually changed
+    const dayChanged = liveWar
+      && previousSeason === race.sectionIndex
+      && previousPeriod > 0
+      && currentBattleDay > 0
+      && previousPeriod !== currentBattleDay;
 
     if (dayChanged) {
       // Day is over! Finalize the previous day's snapshot and save it
-      console.log(`Day changed from ${previousPeriod} to ${currentBattleDay}. Finalizing previous day.`);
+      console.log(`Day changed from ${previousPeriod} to ${currentBattleDay}. Finalizing day ${previousPeriod}.`);
       
       const finalSnapshot = {
         ...liveWar,
         timestamp: new Date().toISOString(),
         participants: liveWar.participants.map(p => ({
           ...p,
-          status: p.decksUsedToday === 0 ? 'absent' : (p.decksUsedToday < 4 ? 'partial' : 'ok')
+          // excused stays excused; everyone else gets final verdict
+          status: p.status === 'excused' ? 'excused' : p.decksUsedToday === 0 ? 'absent' : (p.decksUsedToday < 4 ? 'partial' : 'ok')
         }))
       } as any;
       

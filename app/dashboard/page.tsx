@@ -61,10 +61,31 @@ export default function WarTab() {
     return b.decksUsedToday - a.decksUsedToday;
   });
 
-  const handleExcuse = async (tag: string, name: string) => {
-    const reason = prompt(`Giustifica ${name} per OGGI (opzionale):`);
-    if (reason === null) return;
-    alert('Simulazione salvataggio giustificazione per: ' + name);
+  const handleExcuse = async (tag: string, name: string, currentStatus: string) => {
+    if (currentStatus === 'excused') {
+      if (!confirm(`Rimuovi la giustificazione di ${name}?`)) return;
+      try {
+        const res = await fetch('/api/excuse', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tag })
+        });
+        if (res.ok) window.location.reload();
+        else alert('Errore nella rimozione giustificazione');
+      } catch { alert('Errore di rete'); }
+    } else {
+      const reason = prompt(`Giustifica ${name} per OGGI (scrivi il motivo o lascia vuoto):`);
+      if (reason === null) return;
+      try {
+        const res = await fetch('/api/excuse', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tag, reason: reason || 'Giustificato' })
+        });
+        if (res.ok) window.location.reload();
+        else alert('Errore nel salvataggio giustificazione');
+      } catch { alert('Errore di rete'); }
+    }
   };
 
   return (
@@ -147,8 +168,8 @@ export default function WarTab() {
                     </td>
                     <td className="px-3 py-2.5">
                       <div className="font-rajdhani font-bold text-[14px] text-cr-gold">{p.decksUsedTotal || p.decksUsedToday || 0} <span className="text-[10px] font-sans text-[#8888a8] font-normal">atk</span></div>
-                      {p.decksUsedTotal < (data.battleDay * 4) && (data.periodType === 'combat' || data.periodType === 'colosseum') && (
-                        <div className="text-[10px] text-red-400 mt-[2px] leading-tight">Ha saltato<br/>delle war!</div>
+                      {data.battleDay > 1 && p.decksUsedTotal < ((data.battleDay - 1) * 4) && (data.periodType === 'combat' || data.periodType === 'colosseum') && (
+                        <div className="text-[10px] text-red-400 mt-[2px] leading-tight">Ha saltato<br/>giorni precedenti!</div>
                       )}
                     </td>
                     <td className="px-3 py-2.5">
@@ -158,7 +179,7 @@ export default function WarTab() {
                       )}
                     </td>
                     <td className="px-3 py-2.5">
-                      <button onClick={() => handleExcuse(p.tag, p.name)} className="btn btn-ghost btn-sm px-2 py-1 text-[11px]" title="Giustifica per oggi">
+                      <button onClick={() => handleExcuse(p.tag, p.name, p.status)} className="btn btn-ghost btn-sm px-2 py-1 text-[11px]" title={p.status === "excused" ? "Rimuovi giustificazione" : "Giustifica per oggi"}>
                         🔔
                       </button>
                     </td>

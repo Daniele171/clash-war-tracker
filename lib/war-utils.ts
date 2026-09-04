@@ -50,7 +50,7 @@ export function buildWarSnapshot(race: CRRiverRace, allMembers: any[], isDayClos
   return {
     seasonId: race.sectionIndex, // using sectionIndex as season ID proxy
     sectionIndex: race.sectionIndex,
-    battleDay: battleDay > 0 ? battleDay : 1, // Fallback to 1 if not combat
+    battleDay: battleDay > 0 ? battleDay : 0,
     periodType: race.periodType,
     timestamp: new Date().toISOString(),
     participants: allMembers.map((member: any) => {
