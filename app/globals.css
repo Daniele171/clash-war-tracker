@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-md border font-outfit text-[13px] font-semibold cursor-pointer transition-all duration-200 inline-flex items-center gap-1.5 whitespace-nowrap;
+  }
+  .btn:hover {
+    @apply -translate-y-[1px];
+  }
+  .btn:active {
+    @apply translate-y-0;
+  }
+  .btn-gold {
+    @apply bg-gradient-to-br from-cr-yellow to-cr-gold border-cr-gold text-[#1a0a00] font-bold shadow-[0_4px_14px_rgba(240,192,48,0.3)] hover:shadow-[0_6px_22px_rgba(240,192,48,0.5)];
+  }
+  .btn-primary {
+    @apply bg-gradient-to-br from-cr-purple to-[#4f46e5] border-[rgba(124,58,237,0.5)] text-white shadow-[0_4px_14px_rgba(124,58,237,0.3)] hover:shadow-[0_6px_18px_rgba(124,58,237,0.5)];
+  }
+  .btn-danger {
+    @apply bg-[rgba(220,38,38,0.14)] border-[rgba(220,38,38,0.4)] text-[#f87171] hover:bg-[rgba(220,38,38,0.24)];
+  }
+  .btn-ghost {
+    @apply bg-bg-card border-border-gold text-[#8888a8] hover:text-[#f0f0ff] hover:border-border-gold-strong;
+  }
+
+  .card {
+    @apply bg-bg-card border border-border-gold rounded-xl p-4 shadow-[0_4px_24px_rgba(0,0,0,0.45)] relative overflow-hidden;
+  }
+  .card::before {
+    content: '';
+    @apply absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[rgba(240,192,48,0.4)] to-transparent;
+  }
+  
+  .badge {
+    @apply inline-flex items-center gap-1 px-2 py-[3px] rounded-full text-[11px] font-semibold whitespace-nowrap border;
+  }
+}
