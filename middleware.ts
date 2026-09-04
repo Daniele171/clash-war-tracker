@@ -3,24 +3,37 @@ import type { NextRequest } from 'next/server';
 import { requireAuth } from './lib/auth';
 
 export async function middleware(request: NextRequest) {
-  // Check authentication
+  const { pathname } = request.nextUrl;
+
   const auth = await requireAuth(request);
-  
+
   if (!auth.authorized) {
-    if (request.nextUrl.pathname.startsWith('/api/')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (pathname.startsWith('/api/')) {
+      return NextResponse.json({ error: 'Non autenticato' }, { status: 401 });
     }
-    // Redirect to login page if unauthorized
-    return NextResponse.redirect(new URL('/login', request.url));
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('from', pathname);
+    return NextResponse.redirect(loginUrl);
   }
-  
+
+  // Force password change for first-login users
+  if (auth.user?.mustChangePassword && pathname !== '/change-password') {
+    if (!pathname.startsWith('/api/')) {
+      return NextResponse.redirect(new URL('/change-password', request.url));
+    }
+    // Only allow change-password API call
+    if (!pathname.startsWith('/api/auth/change-password')) {
+      return NextResponse.json({ error: 'Devi cambiare la password' }, { status: 403 });
+    }
+  }
+
   return NextResponse.next();
 }
 
 export const config = {
   matcher: [
-    // Protect dashboard and api routes (except auth endpoints)
     '/dashboard/:path*',
-    '/api/((?!auth|sync).*)', // Note: /api/sync is excluded because it's called by cron (uses CRON_SECRET)
+    '/change-password',
+    '/api/((?!auth|sync).*)',  // /api/sync is called by cron with CRON_SECRET
   ],
 };

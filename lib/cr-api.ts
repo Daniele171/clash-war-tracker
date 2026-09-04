@@ -12,8 +12,7 @@ async function fetchCR(endpoint: string) {
       Authorization: `Bearer ${token}`,
       Accept: 'application/json',
     },
-    // The Clash Royale API data changes fast, but caching for a minute is fine
-    next: { revalidate: 60 } 
+    cache: 'no-store'
   });
 
   if (!response.ok) {

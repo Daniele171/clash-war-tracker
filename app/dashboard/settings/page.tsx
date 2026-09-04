@@ -1,26 +1,208 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+
+interface AppUser {
+  id: string;
+  email: string;
+  role: 'admin' | 'viewer';
+  mustChangePassword: boolean;
+  createdAt: string;
+}
+
 export default function SettingsTab() {
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [users, setUsers] = useState<AppUser[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(true);
+  const [newEmail, setNewEmail] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [newRole, setNewRole] = useState<'viewer' | 'admin'>('viewer');
+  const [createMsg, setCreateMsg] = useState('');
+  const [creating, setCreating] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/auth/me').then(r => r.json()).then(d => {
+      if (d.role === 'admin') {
+        setIsAdmin(true);
+        loadUsers();
+      } else {
+        setLoadingUsers(false);
+      }
+    });
+  }, []);
+
+  const loadUsers = () => {
+    setLoadingUsers(true);
+    fetch('/api/auth/users').then(r => r.json()).then(d => {
+      setUsers(Array.isArray(d) ? d : []);
+      setLoadingUsers(false);
+    });
+  };
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCreateMsg('');
+    setCreating(true);
+    try {
+      const res = await fetch('/api/auth/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: newEmail, password: newPassword, role: newRole }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setCreateMsg(`✅ Utente ${newEmail} creato! Al primo accesso dovrà cambiare la password.`);
+        setNewEmail('');
+        setNewPassword('');
+        loadUsers();
+      } else {
+        setCreateMsg('❌ ' + (data.error || 'Errore'));
+      }
+    } catch {
+      setCreateMsg('❌ Errore di rete');
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleResetPassword = async (email: string) => {
+    const newPwd = prompt(`Nuova password temporanea per ${email}:`);
+    if (!newPwd || newPwd.length < 6) return;
+    const res = await fetch('/api/auth/users', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, newPassword: newPwd }),
+    });
+    if (res.ok) {
+      alert(`✅ Password di ${email} resettata. Dovrà cambiarla al prossimo accesso.`);
+      loadUsers();
+    }
+  };
+
+  const handleDelete = async (email: string) => {
+    if (!confirm(`Eliminare l'utente ${email}?`)) return;
+    const res = await fetch('/api/auth/users', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    if (res.ok) loadUsers();
+  };
+
   return (
     <>
-      <div className="mb-6">
-        <div className="font-rajdhani text-[13px] font-bold text-[#8888a8] uppercase tracking-[1px] mb-2.5 pb-1.5 border-b border-border-gold">Backend Vercel</div>
-        <div className="card">
-          <p className="text-[13px] text-[#f0f0ff] mb-4 leading-relaxed">
-            I dati sono salvati su <strong>Vercel KV</strong> e sincronizzati automaticamente tramite cron job.<br/>
-            Le configurazioni (API Key, Clan Tag) devono essere impostate come variabili d'ambiente nel server Vercel:
-          </p>
-          <div className="bg-[#0c0c1c] border border-border-gold rounded-lg p-3 font-mono text-[11px] text-[#8888a8]">
-            CLAN_TAG="#YOURTAG"<br/>
-            CR_API_KEY="ey..."<br/>
-            CRON_SECRET="your_secret_password"<br/>
-            KV_REST_API_URL="..."<br/>
-            KV_REST_API_TOKEN="..."
+      {/* User management — admin only */}
+      {isAdmin && (
+        <>
+          <div className="font-rajdhani text-[17px] font-bold text-cr-gold mb-3 flex items-center gap-2">
+            👥 Gestione Utenti
           </div>
-          <div className="mt-4 p-2.5 bg-[rgba(37,99,235,0.1)] border border-[rgba(37,99,235,0.3)] text-[#60a5fa] text-[12px] rounded-lg">
-            ℹ️ Questa è la versione Backend. Tutte le modifiche vengono applicate a livello server.
+
+          {/* Create user form */}
+          <div className="card mb-5">
+            <div className="font-rajdhani text-[14px] font-bold text-[#f0f0ff] mb-3">➕ Crea Nuovo Utente</div>
+            <form onSubmit={handleCreate} className="flex flex-col gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <input
+                  type="email"
+                  value={newEmail}
+                  onChange={e => setNewEmail(e.target.value)}
+                  required
+                  placeholder="email@esempio.com"
+                  className="bg-[#0c0c1c] border border-border-gold rounded-lg px-3 py-2 text-[13px] text-white placeholder-[#555575] focus:outline-none focus:border-cr-gold transition-colors"
+                />
+                <input
+                  type="text"
+                  value={newPassword}
+                  onChange={e => setNewPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  placeholder="Password temporanea (min. 6 car.)"
+                  className="bg-[#0c0c1c] border border-border-gold rounded-lg px-3 py-2 text-[13px] text-white placeholder-[#555575] focus:outline-none focus:border-cr-gold transition-colors"
+                />
+              </div>
+              <div className="flex items-center gap-3">
+                <select
+                  value={newRole}
+                  onChange={e => setNewRole(e.target.value as 'viewer' | 'admin')}
+                  className="bg-[#0c0c1c] border border-border-gold rounded-lg px-3 py-2 text-[13px] text-white focus:outline-none focus:border-cr-gold transition-colors"
+                >
+                  <option value="viewer">👤 Membro (solo visualizzazione)</option>
+                  <option value="admin">👑 Admin (sync + gestione utenti)</option>
+                </select>
+                <button
+                  type="submit"
+                  disabled={creating}
+                  className="bg-cr-gold text-[#080815] font-rajdhani font-bold text-[13px] px-4 py-2 rounded-lg hover:bg-[#f5d060] transition-all disabled:opacity-50 whitespace-nowrap"
+                >
+                  {creating ? '...' : 'Crea Utente'}
+                </button>
+              </div>
+              {createMsg && (
+                <div className={`text-[12px] p-2.5 rounded-lg ${createMsg.startsWith('✅') ? 'text-green-400 bg-[rgba(22,163,74,0.1)] border border-[rgba(22,163,74,0.3)]' : 'text-red-400 bg-[rgba(220,38,38,0.1)] border border-[rgba(220,38,38,0.3)]'}`}>
+                  {createMsg}
+                </div>
+              )}
+            </form>
           </div>
-        </div>
+
+          {/* Users list */}
+          <div className="card mb-6">
+            <div className="font-rajdhani text-[14px] font-bold text-[#f0f0ff] mb-3">📋 Utenti Registrati</div>
+            {loadingUsers ? (
+              <div className="text-[#8888a8] text-[13px]">Caricamento...</div>
+            ) : users.length === 0 ? (
+              <div className="text-[#8888a8] text-[13px]">Nessun utente trovato.</div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {users.map(u => (
+                  <div key={u.id} className="flex items-center justify-between p-2.5 bg-[#0c0c1c] border border-border-gold rounded-lg">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[13px] font-semibold">{u.email}</span>
+                        <span className={`badge text-[9px] ${u.role === 'admin' ? 'bg-[rgba(240,192,48,0.15)] border-[rgba(240,192,48,0.4)] text-cr-gold' : 'bg-[rgba(99,102,241,0.15)] border-[rgba(99,102,241,0.4)] text-[#a78bfa]'}`}>
+                          {u.role === 'admin' ? '👑 Admin' : '👤 Membro'}
+                        </span>
+                        {u.mustChangePassword && (
+                          <span className="badge bg-[rgba(234,88,12,0.15)] border-[rgba(234,88,12,0.4)] text-[#fb923c] text-[9px]">
+                            🔑 Cambio pwd richiesto
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[10px] text-[#555575] mt-0.5">
+                        Creato: {new Date(u.createdAt).toLocaleDateString('it-IT')}
+                      </div>
+                    </div>
+                    <div className="flex gap-1.5">
+                      <button
+                        onClick={() => handleResetPassword(u.email)}
+                        className="text-[11px] px-2.5 py-1 rounded border border-border-gold text-[#8888a8] hover:border-cr-gold hover:text-cr-gold transition-colors"
+                        title="Reset password"
+                      >
+                        🔑
+                      </button>
+                      <button
+                        onClick={() => handleDelete(u.email)}
+                        className="text-[11px] px-2.5 py-1 rounded border border-border-gold text-[#8888a8] hover:border-red-500 hover:text-red-400 transition-colors"
+                        title="Elimina utente"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* System info */}
+      <div className="font-rajdhani text-[14px] font-bold text-[#8888a8] mb-2">ℹ️ Sistema</div>
+      <div className="card">
+        <p className="text-[13px] text-[#8888a8] leading-relaxed">
+          Dati salvati su <strong className="text-[#f0f0ff]">Upstash Redis</strong> · Sync automatica ogni 15 min via <strong className="text-[#f0f0ff]">cron-job.org</strong>
+        </p>
       </div>
     </>
   );

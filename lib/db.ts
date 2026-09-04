@@ -8,9 +8,14 @@ async function getRedis() {
     redisClient = createClient({
       url: process.env.REDIS_URL || process.env.KV_REST_API_URL || ''
     });
-    // In serverless environments, we must handle connection errors gracefully
-    redisClient.on('error', (err: any) => console.error('Redis Client Error', err));
+    redisClient.on('error', (err: any) => {
+      console.error('Redis Client Error', err);
+      // Reset on fatal errors so next call reconnects
+      redisClient = null;
+    });
     await redisClient.connect();
+  } else if (!redisClient.isOpen) {
+    try { await redisClient.connect(); } catch {}
   }
   return redisClient;
 }
@@ -46,7 +51,7 @@ const KEYS = {
   SETTINGS: 'cwt:settings',
 };
 
-async function getJson(key: string) {
+export async function getJson(key: string) {
   try {
     const client = await getRedis();
     const val = await client.get(key);
@@ -57,7 +62,7 @@ async function getJson(key: string) {
   }
 }
 
-async function setJson(key: string, value: any) {
+export async function setJson(key: string, value: any) {
   try {
     const client = await getRedis();
     await client.set(key, JSON.stringify(value));
@@ -113,7 +118,8 @@ export async function removeExcuse(tag: string) {
   
   const p = live.participants.find((p: any) => p.tag === tag);
   if (p) {
-    p.status = p.decksUsedToday === 0 ? 'pending' : p.decksUsedToday < 4 ? 'partial' : 'ok';
+    // Reset to pending — next sync call will recalculate the correct status
+    p.status = 'pending';
     p.excuseReason = undefined;
     await saveLiveWar(live);
     return true;
