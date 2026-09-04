@@ -2,7 +2,7 @@
 
 const CR_API_URL = 'https://proxy.royaleapi.dev/v1';
 
-async function fetchCR(endpoint: string) {
+async function fetchCR(endpoint: string, allow404 = false) {
   const token = process.env.CR_API_KEY;
   if (!token) throw new Error('CR_API_KEY is not defined in environment variables');
 
@@ -17,7 +17,10 @@ async function fetchCR(endpoint: string) {
 
   if (!response.ok) {
     if (response.status === 403) throw new Error('CR API 403: Invalid Token or IP not whitelisted');
-    if (response.status === 404) throw new Error('CR API 404: Not Found (check clan tag)');
+    if (response.status === 404) {
+      if (allow404) return null;
+      throw new Error('CR API 404: Not Found (check clan tag)');
+    }
     throw new Error(`CR API Error: ${response.status} ${response.statusText}`);
   }
 
@@ -42,10 +45,11 @@ export async function getClanMembers(tag: string) {
 
 export async function getCurrentRiverRace(tag: string) {
   const formattedTag = encodeURIComponent(formatTag(tag));
-  return fetchCR(`/clans/${formattedTag}/currentriverrace`);
+  // Pass true to allow404 so we don't crash if the clan is currently not in a war
+  return fetchCR(`/clans/${formattedTag}/currentriverrace`, true);
 }
 
 export async function getRiverRaceLog(tag: string) {
   const formattedTag = encodeURIComponent(formatTag(tag));
-  return fetchCR(`/clans/${formattedTag}/riverracelog?limit=20`);
+  return fetchCR(`/clans/${formattedTag}/riverracelog?limit=20`, true);
 }
