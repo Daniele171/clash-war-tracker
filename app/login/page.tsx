@@ -3,132 +3,107 @@
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
+import { createClient } from '@/utils/supabase/client';
 
 type Step = 'email' | 'password' | 'otp';
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const supabase = createClient();
+  
   const [step, setStep] = useState<Step>('email');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [otp, setOtp] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
-  // Step 1: submit email → determine admin (password) or member (OTP)
-  const handleEmailSubmit = async (e: React.FormEvent) => {
+  // Step 1: Submit email
+  // Supabase doesn't let us easily check if user is admin before login without RPC or public table.
+  // BUT we can just try to sign in with OTP. If they are admin, maybe they still get OTP?
+  // Actually, we can check if they have a password set, or just provide a toggle 'Sei un admin?'
+  // For simplicity, let's just ask if they want to login with Password or OTP.
+  // We'll keep the single flow: assume OTP for everyone. If they click 'Sono Admin', show password field.
+  
+  const handleOtpLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      const res = await fetch('/api/auth/otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: false, // only existing users can login
+        }
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || 'Errore');
-        return;
-      }
-      if (data.needsPassword) {
-        setStep('password'); // admin
-      } else {
-        setStep('otp'); // member — OTP sent
-      }
-    } catch {
-      setError('Errore di rete, riprova');
+      if (error) throw error;
+      setStep('otp');
+    } catch (err: any) {
+      setError(err.message || 'Errore. Assicurati che il tuo account sia stato creato.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Step 2a: admin submits password
-  const handlePasswordSubmit = async (e: React.FormEvent) => {
+  const handlePasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || 'Credenziali errate');
-        return;
-      }
-      if (data.mustChangePassword) {
-        router.push('/change-password');
-      } else {
-        router.push(searchParams.get('from') || '/dashboard');
-      }
-    } catch {
-      setError('Errore di rete, riprova');
+      if (error) throw error;
+      router.push('/dashboard');
+      router.refresh();
+    } catch (err: any) {
+      setError('Credenziali non valide');
     } finally {
       setLoading(false);
     }
   };
 
-  // Step 2b: member submits OTP
-  const handleOtpSubmit = async (e: React.FormEvent) => {
+  const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, otp }),
+      const { error } = await supabase.auth.verifyOtp({
+        email,
+        token: otp,
+        type: 'email',
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || 'Codice non valido');
-        return;
-      }
-      router.push(searchParams.get('from') || '/dashboard');
-    } catch {
-      setError('Errore di rete, riprova');
+      if (error) throw error;
+      router.push('/dashboard');
+      router.refresh();
+    } catch (err: any) {
+      setError('Codice non valido o scaduto');
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleResendOTP = async () => {
-    setError('');
-    setLoading(true);
-    await fetch('/api/auth/otp', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
-    });
-    setLoading(false);
-    setOtp('');
   };
 
   return (
     <div className="min-h-screen bg-[#080815] flex items-center justify-center px-4">
       <div className="w-full max-w-[380px]">
-        {/* Logo */}
         <div className="text-center mb-8">
           <div className="text-[48px] drop-shadow-[0_0_20px_rgba(240,192,48,0.6)] animate-[float_3s_ease-in-out_infinite] mb-3">⚔️</div>
           <h1 className="font-rajdhani text-[28px] font-bold text-cr-gold tracking-wide">
             Clan War Tracker
           </h1>
-          <p className="text-[13px] text-[#8888a8] mt-1">Accedi per continuare</p>
+          <p className="text-[13px] text-[#8888a8] mt-1">Accesso tramite Supabase</p>
         </div>
 
-        {/* Card */}
         <div className="bg-bg-card border border-border-gold rounded-2xl p-6 shadow-[0_8px_40px_rgba(0,0,0,0.5)]">
 
-          {/* STEP 1: Email */}
-          {step === 'email' && (
-            <form onSubmit={handleEmailSubmit} className="flex flex-col gap-4">
+          {step === 'email' && !isAdmin && (
+            <form onSubmit={handleOtpLogin} className="flex flex-col gap-4">
               <div>
                 <label className="block text-[11px] text-[#8888a8] font-semibold uppercase tracking-wider mb-1.5">
-                  Email
+                  Email Membro
                 </label>
                 <input
                   type="email"
@@ -142,16 +117,29 @@ function LoginForm() {
               </div>
               {error && <div className="bg-[rgba(220,38,38,0.12)] border border-[rgba(220,38,38,0.4)] text-[#f87171] text-[13px] rounded-lg px-3.5 py-2.5">❌ {error}</div>}
               <button type="submit" disabled={loading} className="w-full bg-cr-gold text-[#080815] font-rajdhani font-bold text-[16px] py-3 rounded-lg hover:bg-[#f5d060] active:scale-95 transition-all disabled:opacity-50">
-                {loading ? '⏳ Verifica...' : 'Continua →'}
+                {loading ? '⏳ Invio OTP...' : 'Ricevi Codice OTP →'}
+              </button>
+              <button type="button" onClick={() => { setIsAdmin(true); setError(''); }} className="text-[12px] text-[#8888a8] hover:text-white transition-colors text-center">
+                👑 Sono un Admin
               </button>
             </form>
           )}
 
-          {/* STEP 2a: Password (admin) */}
-          {step === 'password' && (
-            <form onSubmit={handlePasswordSubmit} className="flex flex-col gap-4">
-              <div className="text-[12px] text-[#8888a8] text-center mb-1">
-                👑 Admin · <span className="text-[#f0f0ff]">{email}</span>
+          {step === 'email' && isAdmin && (
+            <form onSubmit={handlePasswordLogin} className="flex flex-col gap-4">
+              <div>
+                <label className="block text-[11px] text-[#8888a8] font-semibold uppercase tracking-wider mb-1.5">
+                  Email Admin
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  required
+                  autoFocus
+                  placeholder="admin@email.com"
+                  className="w-full bg-[#0c0c1c] border border-border-gold rounded-lg px-3.5 py-2.5 text-[14px] text-white placeholder-[#555575] focus:outline-none focus:border-cr-gold focus:ring-1 focus:ring-cr-gold transition-colors"
+                />
               </div>
               <div>
                 <label className="block text-[11px] text-[#8888a8] font-semibold uppercase tracking-wider mb-1.5">
@@ -162,7 +150,6 @@ function LoginForm() {
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   required
-                  autoFocus
                   placeholder="••••••••"
                   className="w-full bg-[#0c0c1c] border border-border-gold rounded-lg px-3.5 py-2.5 text-[14px] text-white placeholder-[#555575] focus:outline-none focus:border-cr-gold focus:ring-1 focus:ring-cr-gold transition-colors"
                 />
@@ -171,15 +158,14 @@ function LoginForm() {
               <button type="submit" disabled={loading} className="w-full bg-cr-gold text-[#080815] font-rajdhani font-bold text-[16px] py-3 rounded-lg hover:bg-[#f5d060] active:scale-95 transition-all disabled:opacity-50">
                 {loading ? '⏳ Accesso...' : 'Accedi'}
               </button>
-              <button type="button" onClick={() => { setStep('email'); setError(''); }} className="text-[12px] text-[#8888a8] hover:text-white transition-colors text-center">
-                ← Cambia email
+              <button type="button" onClick={() => { setIsAdmin(false); setError(''); }} className="text-[12px] text-[#8888a8] hover:text-white transition-colors text-center">
+                👤 Sono un Membro
               </button>
             </form>
           )}
 
-          {/* STEP 2b: OTP (member) */}
           {step === 'otp' && (
-            <form onSubmit={handleOtpSubmit} className="flex flex-col gap-4">
+            <form onSubmit={handleVerifyOtp} className="flex flex-col gap-4">
               <div className="text-center">
                 <div className="text-[13px] text-[#8888a8]">Codice inviato a</div>
                 <div className="font-semibold text-[#f0f0ff] mt-0.5">{email}</div>
@@ -205,18 +191,12 @@ function LoginForm() {
               <button type="submit" disabled={loading || otp.length !== 6} className="w-full bg-cr-gold text-[#080815] font-rajdhani font-bold text-[16px] py-3 rounded-lg hover:bg-[#f5d060] active:scale-95 transition-all disabled:opacity-50">
                 {loading ? '⏳ Verifica...' : 'Accedi'}
               </button>
-              <div className="flex items-center justify-between text-[12px]">
-                <button type="button" onClick={() => { setStep('email'); setError(''); setOtp(''); }} className="text-[#8888a8] hover:text-white transition-colors">
-                  ← Cambia email
-                </button>
-                <button type="button" onClick={handleResendOTP} disabled={loading} className="text-cr-gold hover:text-[#f5d060] transition-colors">
-                  Reinvia codice
-                </button>
-              </div>
+              <button type="button" onClick={() => { setStep('email'); setError(''); setOtp(''); }} className="text-[#8888a8] hover:text-white transition-colors text-[12px] text-center mt-2">
+                ← Cambia email
+              </button>
             </form>
           )}
         </div>
-        <p className="text-center text-[11px] text-[#555575] mt-6">Non hai un account? Contatta il tuo admin del clan.</p>
       </div>
     </div>
   );

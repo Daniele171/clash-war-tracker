@@ -1,39 +1,18 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import { requireAuth } from './lib/auth';
+import { updateSession } from '@/utils/supabase/middleware'
 
-export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  const auth = await requireAuth(request);
-
-  if (!auth.authorized) {
-    if (pathname.startsWith('/api/')) {
-      return NextResponse.json({ error: 'Non autenticato' }, { status: 401 });
-    }
-    const loginUrl = new URL('/login', request.url);
-    loginUrl.searchParams.set('from', pathname);
-    return NextResponse.redirect(loginUrl);
-  }
-
-  // Force password change for first-login users
-  if (auth.user?.mustChangePassword && pathname !== '/change-password') {
-    if (!pathname.startsWith('/api/')) {
-      return NextResponse.redirect(new URL('/change-password', request.url));
-    }
-    // Only allow change-password API call
-    if (!pathname.startsWith('/api/auth/change-password')) {
-      return NextResponse.json({ error: 'Devi cambiare la password' }, { status: 403 });
-    }
-  }
-
-  return NextResponse.next();
+export async function middleware(request: any) {
+  return await updateSession(request)
 }
 
 export const config = {
   matcher: [
-    '/dashboard/:path*',
-    '/change-password',
-    '/api/((?!auth|sync).*)',  // /api/sync is called by cron with CRON_SECRET
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * Feel free to modify this pattern to include more paths.
+     */
+    '/((?!_next/static|_next/image|favicon.ico|.*\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
-};
+}

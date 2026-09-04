@@ -1,14 +1,12 @@
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
-import { getSession } from '@/lib/auth';
-import { getCurrentRiverRace, getClanMembers } from '@/lib/cr-api';
-import { getLiveWar, saveLiveWar, saveWarSnapshot, getMembers, saveMembers } from '@/lib/db';
-import { buildWarSnapshot } from '@/lib/war-utils';
+import { createClient } from '@/utils/supabase/server';
 
-// Browser-initiated sync (uses session cookie instead of CRON_SECRET)
+// Browser-initiated sync
 export async function GET(request: NextRequest) {
-  const session = await getSession(request);
-  if (!session || session.role !== 'admin') {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user || user.user_metadata?.role !== 'admin') {
     return NextResponse.json({ error: 'Solo gli admin possono sincronizzare manualmente' }, { status: 403 });
   }
 

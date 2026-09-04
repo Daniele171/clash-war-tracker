@@ -6,7 +6,6 @@ interface AppUser {
   id: string;
   email: string;
   role: 'admin' | 'viewer';
-  mustChangePassword: boolean;
   createdAt: string;
 }
 
@@ -33,7 +32,7 @@ export default function SettingsTab() {
 
   const loadUsers = () => {
     setLoadingUsers(true);
-    fetch('/api/auth/users').then(r => r.json()).then(d => {
+    fetch('/api/users').then(r => r.json()).then(d => {
       setUsers(Array.isArray(d) ? d : []);
       setLoadingUsers(false);
     });
@@ -44,14 +43,14 @@ export default function SettingsTab() {
     setCreateMsg('');
     setCreating(true);
     try {
-      const res = await fetch('/api/auth/users', {
+      const res = await fetch('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: newEmail, password: newPassword, role: newRole }),
       });
       const data = await res.json();
       if (res.ok) {
-        setCreateMsg(`✅ Utente ${newEmail} creato! Al primo accesso dovrà cambiare la password.`);
+        setCreateMsg(`✅ Utente ${newEmail} creato! Supabase gestirà l'autenticazione.`);
         setNewEmail('');
         setNewPassword('');
         loadUsers();
@@ -65,28 +64,15 @@ export default function SettingsTab() {
     }
   };
 
-  const handleResetPassword = async (email: string) => {
-    const newPwd = prompt(`Nuova password temporanea per ${email}:`);
-    if (!newPwd || newPwd.length < 6) return;
-    const res = await fetch('/api/auth/users', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, newPassword: newPwd }),
-    });
-    if (res.ok) {
-      alert(`✅ Password di ${email} resettata. Dovrà cambiarla al prossimo accesso.`);
-      loadUsers();
-    }
-  };
-
-  const handleDelete = async (email: string) => {
+  const handleDelete = async (id: string, email: string) => {
     if (!confirm(`Eliminare l'utente ${email}?`)) return;
-    const res = await fetch('/api/auth/users', {
+    const res = await fetch('/api/users', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ id }),
     });
     if (res.ok) loadUsers();
+    else alert('Errore eliminazione');
   };
 
   return (
@@ -95,7 +81,7 @@ export default function SettingsTab() {
       {isAdmin && (
         <>
           <div className="font-rajdhani text-[17px] font-bold text-cr-gold mb-3 flex items-center gap-2">
-            👥 Gestione Utenti
+            👥 Gestione Utenti (Supabase)
           </div>
 
           {/* Create user form */}
@@ -111,24 +97,29 @@ export default function SettingsTab() {
                   placeholder="email@esempio.com"
                   className="bg-[#0c0c1c] border border-border-gold rounded-lg px-3 py-2 text-[13px] text-white placeholder-[#555575] focus:outline-none focus:border-cr-gold transition-colors"
                 />
-                <input
-                  type="text"
-                  value={newPassword}
-                  onChange={e => setNewPassword(e.target.value)}
-                  required
-                  minLength={6}
-                  placeholder="Password temporanea (min. 6 car.)"
-                  className="bg-[#0c0c1c] border border-border-gold rounded-lg px-3 py-2 text-[13px] text-white placeholder-[#555575] focus:outline-none focus:border-cr-gold transition-colors"
-                />
+                {newRole === 'admin' && (
+                  <input
+                    type="text"
+                    value={newPassword}
+                    onChange={e => setNewPassword(e.target.value)}
+                    required
+                    minLength={6}
+                    placeholder="Password (obbligatoria per admin)"
+                    className="bg-[#0c0c1c] border border-border-gold rounded-lg px-3 py-2 text-[13px] text-white placeholder-[#555575] focus:outline-none focus:border-cr-gold transition-colors"
+                  />
+                )}
               </div>
               <div className="flex items-center gap-3">
                 <select
                   value={newRole}
-                  onChange={e => setNewRole(e.target.value as 'viewer' | 'admin')}
+                  onChange={e => {
+                    setNewRole(e.target.value as 'viewer' | 'admin');
+                    if (e.target.value === 'viewer') setNewPassword('');
+                  }}
                   className="bg-[#0c0c1c] border border-border-gold rounded-lg px-3 py-2 text-[13px] text-white focus:outline-none focus:border-cr-gold transition-colors"
                 >
-                  <option value="viewer">👤 Membro (solo visualizzazione)</option>
-                  <option value="admin">👑 Admin (sync + gestione utenti)</option>
+                  <option value="viewer">👤 Membro (Login con OTP)</option>
+                  <option value="admin">👑 Admin (Login con Password)</option>
                 </select>
                 <button
                   type="submit"
@@ -163,11 +154,6 @@ export default function SettingsTab() {
                         <span className={`badge text-[9px] ${u.role === 'admin' ? 'bg-[rgba(240,192,48,0.15)] border-[rgba(240,192,48,0.4)] text-cr-gold' : 'bg-[rgba(99,102,241,0.15)] border-[rgba(99,102,241,0.4)] text-[#a78bfa]'}`}>
                           {u.role === 'admin' ? '👑 Admin' : '👤 Membro'}
                         </span>
-                        {u.mustChangePassword && (
-                          <span className="badge bg-[rgba(234,88,12,0.15)] border-[rgba(234,88,12,0.4)] text-[#fb923c] text-[9px]">
-                            🔑 Cambio pwd richiesto
-                          </span>
-                        )}
                       </div>
                       <div className="text-[10px] text-[#555575] mt-0.5">
                         Creato: {new Date(u.createdAt).toLocaleDateString('it-IT')}
@@ -175,14 +161,7 @@ export default function SettingsTab() {
                     </div>
                     <div className="flex gap-1.5">
                       <button
-                        onClick={() => handleResetPassword(u.email)}
-                        className="text-[11px] px-2.5 py-1 rounded border border-border-gold text-[#8888a8] hover:border-cr-gold hover:text-cr-gold transition-colors"
-                        title="Reset password"
-                      >
-                        🔑
-                      </button>
-                      <button
-                        onClick={() => handleDelete(u.email)}
+                        onClick={() => handleDelete(u.id, u.email)}
                         className="text-[11px] px-2.5 py-1 rounded border border-border-gold text-[#8888a8] hover:border-red-500 hover:text-red-400 transition-colors"
                         title="Elimina utente"
                       >
@@ -201,7 +180,8 @@ export default function SettingsTab() {
       <div className="font-rajdhani text-[14px] font-bold text-[#8888a8] mb-2">ℹ️ Sistema</div>
       <div className="card">
         <p className="text-[13px] text-[#8888a8] leading-relaxed">
-          Dati salvati su <strong className="text-[#f0f0ff]">Upstash Redis</strong> · Sync automatica ogni 15 min via <strong className="text-[#f0f0ff]">cron-job.org</strong>
+          Dati salvati su <strong className="text-[#f0f0ff]">Upstash Redis</strong> · Sync automatica ogni 15 min via <strong className="text-[#f0f0ff]">cron-job.org</strong><br/>
+          Autenticazione gestita da <strong className="text-[#f0f0ff]">Supabase</strong>
         </p>
       </div>
     </>
