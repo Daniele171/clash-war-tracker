@@ -2,6 +2,21 @@ import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/utils/supabase/admin'
 import { createClient } from '@/utils/supabase/server'
 
+// Convert username to internal email format
+function usernameToEmail(username: string): string {
+  // Sanitize: lowercase, remove spaces, keep only alphanumerics and some safe chars
+  const sanitized = username.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_.-]/g, '');
+  return `${sanitized}@clan.local`;
+}
+
+// Extract username from internal email
+function emailToUsername(email: string): string {
+  if (email.endsWith('@clan.local')) {
+    return email.replace('@clan.local', '');
+  }
+  return email; // fallback for legacy accounts
+}
+
 // GET all users
 export async function GET() {
   const supabase = await createClient()
@@ -20,6 +35,7 @@ export async function GET() {
   const users = data.users.map(u => ({
     id: u.id,
     email: u.email,
+    username: u.user_metadata?.username || emailToUsername(u.email || ''),
     role: u.user_metadata?.role || 'viewer',
     createdAt: u.created_at
   }))
@@ -36,19 +52,30 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { email, password, role } = await request.json()
-    if (!email || !password) {
-      return NextResponse.json({ error: 'Email e Password sono obbligatorie' }, { status: 400 })
+    const body = await request.json()
+    const { password, role } = body
+    // Support both 'username' (new) and 'email' (legacy) field
+    const username = body.username || (body.email ? body.email.replace('@clan.local', '').replace(/@.*/, '') : null)
+
+    if (!username || !password) {
+      return NextResponse.json({ error: 'Username e Password sono obbligatori' }, { status: 400 })
     }
 
+    if (password.length < 6) {
+      return NextResponse.json({ error: 'La password deve avere almeno 6 caratteri' }, { status: 400 })
+    }
+
+    const internalEmail = usernameToEmail(username)
+    
     const adminAuthClient = createAdminClient()
     const { data, error } = await adminAuthClient.auth.admin.createUser({
-      email,
+      email: internalEmail,
       password: password,
-      email_confirm: true,
+      email_confirm: true, // Skip email verification
       user_metadata: { 
+        username: username, // Store the original display name
         role: role || 'viewer',
-        must_change_password: true // Forza il cambio al primo accesso
+        must_change_password: true // Force password change on first login
       }
     })
 

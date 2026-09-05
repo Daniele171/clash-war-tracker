@@ -5,11 +5,17 @@ import { useRouter } from 'next/navigation';
 import { Suspense } from 'react';
 import { createClient } from '@/utils/supabase/client';
 
+// Convert username to internal email format (must match server-side logic)
+function usernameToEmail(username: string): string {
+  const sanitized = username.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_.-]/g, '');
+  return `${sanitized}@clan.local`;
+}
+
 function LoginForm() {
   const router = useRouter();
   const supabase = createClient();
   
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -19,15 +25,16 @@ function LoginForm() {
     setError('');
     setLoading(true);
     try {
+      const internalEmail = usernameToEmail(username.trim());
       const { error } = await supabase.auth.signInWithPassword({
-        email,
+        email: internalEmail,
         password,
       });
       if (error) throw error;
       router.push('/dashboard');
       router.refresh();
     } catch (err: any) {
-      setError('Credenziali non valide');
+      setError('Username o password non validi');
     } finally {
       setLoading(false);
     }
@@ -48,16 +55,17 @@ function LoginForm() {
           <form onSubmit={handleLogin} className="flex flex-col gap-4">
             <div>
               <label className="block text-[11px] text-[#8888a8] font-semibold uppercase tracking-wider mb-1.5">
-                Email
+                Username
               </label>
               <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
+                type="text"
+                value={username}
+                onChange={e => setUsername(e.target.value)}
                 required
                 autoFocus
-                placeholder="tuo@email.com"
-                className="w-full bg-[#0L0c1c] border border-border-gold rounded-lg px-3.5 py-2.5 text-[14px] text-white placeholder-[#555575] focus:outline-none focus:border-cr-gold focus:ring-1 focus:ring-cr-gold transition-colors"
+                autoComplete="username"
+                placeholder="Il tuo nome nel clan (es. rigno)"
+                className="w-full bg-[#0c0c1c] border border-border-gold rounded-lg px-3.5 py-2.5 text-[14px] text-white placeholder-[#555575] focus:outline-none focus:border-cr-gold focus:ring-1 focus:ring-cr-gold transition-colors"
               />
             </div>
             <div>
@@ -69,8 +77,9 @@ function LoginForm() {
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 required
+                autoComplete="current-password"
                 placeholder="••••••••"
-                className="w-full bg-[#0L0c1c] border border-border-gold rounded-lg px-3.5 py-2.5 text-[14px] text-white placeholder-[#555575] focus:outline-none focus:border-cr-gold focus:ring-1 focus:ring-cr-gold transition-colors"
+                className="w-full bg-[#0c0c1c] border border-border-gold rounded-lg px-3.5 py-2.5 text-[14px] text-white placeholder-[#555575] focus:outline-none focus:border-cr-gold focus:ring-1 focus:ring-cr-gold transition-colors"
               />
             </div>
             {error && <div className="bg-[rgba(220,38,38,0.12)] border border-[rgba(220,38,38,0.4)] text-[#f87171] text-[13px] rounded-lg px-3.5 py-2.5">❌ {error}</div>}
