@@ -5,8 +5,11 @@ import { useRouter } from 'next/navigation';
 import { Suspense } from 'react';
 import { createClient } from '@/utils/supabase/client';
 
-// Convert username to internal email format (must match server-side logic)
+// Convert username to internal email format.
+// If the input already contains '@', treat it as a full email (for legacy/admin accounts).
+// Otherwise, append @clan.local (for normal clan members).
 function usernameToEmail(username: string): string {
+  if (username.includes('@')) return username; // already a full email
   const sanitized = username.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_.-]/g, '');
   return `${sanitized}@clan.local`;
 }
