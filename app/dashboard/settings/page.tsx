@@ -21,6 +21,14 @@ export default function SettingsTab() {
   const [createMsg, setCreateMsg] = useState('');
   const [creating, setCreating] = useState(false);
 
+  const loadUsers = () => {
+    setLoadingUsers(true);
+    fetch('/api/users').then(r => r.json()).then(d => {
+      setUsers(Array.isArray(d) ? d : []);
+      setLoadingUsers(false);
+    });
+  };
+
   useEffect(() => {
     fetch('/api/auth/me').then(r => r.json()).then(d => {
       if (d.role === 'admin') {
@@ -31,14 +39,6 @@ export default function SettingsTab() {
       }
     });
   }, []);
-
-  const loadUsers = () => {
-    setLoadingUsers(true);
-    fetch('/api/users').then(r => r.json()).then(d => {
-      setUsers(Array.isArray(d) ? d : []);
-      setLoadingUsers(false);
-    });
-  };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();

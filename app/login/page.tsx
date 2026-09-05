@@ -26,7 +26,7 @@ function LoginForm() {
       if (error) throw error;
       router.push('/dashboard');
       router.refresh();
-    } catch (err: any) {
+    } catch {
       setError('Email o password non validi');
     } finally {
       setLoading(false);
