@@ -167,9 +167,13 @@ export default function WarTab() {
                       </div>
                     </td>
                     <td className="px-3 py-2.5">
-                      <div className="font-rajdhani font-bold text-[14px] text-cr-gold">{p.decksUsedTotal || p.decksUsedToday || 0} <span className="text-[10px] font-sans text-[#8888a8] font-normal">atk</span></div>
-                      {data.battleDay > 1 && p.decksUsedTotal < ((data.battleDay - 1) * 4) && (data.periodType === 'combat' || data.periodType === 'colosseum') && (
-                        <div className="text-[10px] text-red-400 mt-[2px] leading-tight">Ha saltato<br/>giorni precedenti!</div>
+                      <div className="font-rajdhani font-bold text-[14px] text-cr-gold">{p.decksUsedTotal || p.decksUsedToday || 0} <span className="text-[10px] font-sans text-[#8888a8] font-normal">mazzi</span></div>
+                      {p.missedDaysBreakdown && p.missedDaysBreakdown.length > 0 && (
+                        <div className="text-[10px] text-red-400 mt-[2px] leading-tight flex flex-col gap-0.5">
+                          {p.missedDaysBreakdown.map((mb: any) => (
+                            <span key={mb.day}>Giorno {mb.day}: saltat{mb.missed === 1 ? 'o' : 'i'} {mb.missed} mazz{mb.missed === 1 ? 'o' : 'i'}</span>
+                          ))}
+                        </div>
                       )}
                     </td>
                     <td className="px-3 py-2.5">

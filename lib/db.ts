@@ -1,4 +1,4 @@
-import { kv } from '@vercel/kv';
+import { createClient } from '@supabase/supabase-js';
 
 export interface ClanMember {
   tag: string;
@@ -24,6 +24,19 @@ export interface WarSnapshot {
   }[];
 }
 
+// Create a singleton Supabase admin client for database operations
+// This bypasses RLS and should only be used server-side
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+
+const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    persistSession: false,
+    autoRefreshToken: false,
+    detectSessionInUrl: false
+  }
+});
+
 const KEYS = {
   MEMBERS: 'cwt:members',
   WAR_SNAP: (seasonId: number, day: number) => `cwt:war:${seasonId}:day:${day}`,
@@ -33,26 +46,39 @@ const KEYS = {
 
 export async function getJson(key: string) {
   try {
-    const val = await kv.get(key);
-    if (typeof val === 'string') {
-      try {
-        return JSON.parse(val);
-      } catch (e) {
-        return val;
+    const { data, error } = await supabaseAdmin
+      .from('kv_store')
+      .select('value')
+      .eq('key', key)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // No rows found, equivalent to null in KV
+        return null;
       }
+      console.error('Supabase KV get error', error);
+      return null;
     }
-    return val;
+    
+    return data?.value;
   } catch (e) {
-    console.error('KV get error', e);
+    console.error('Supabase KV get exception', e);
     return null;
   }
 }
 
 export async function setJson(key: string, value: any) {
   try {
-    await kv.set(key, value);
+    const { error } = await supabaseAdmin
+      .from('kv_store')
+      .upsert({ key, value }, { onConflict: 'key' });
+      
+    if (error) {
+      console.error('Supabase KV set error', error);
+    }
   } catch (e) {
-    console.error('KV set error', e);
+    console.error('Supabase KV set exception', e);
   }
 }
 
@@ -72,6 +98,28 @@ export async function saveWarSnapshot(seasonId: number, day: number, snapshot: W
 
 export async function getWarSnapshot(seasonId: number, day: number): Promise<WarSnapshot | null> {
   return getJson(KEYS.WAR_SNAP(seasonId, day));
+}
+
+export async function getSeasonSnapshots(seasonId: number): Promise<WarSnapshot[]> {
+  try {
+    const prefix = `cwt:war:${seasonId}:day:`;
+    const { data, error } = await supabaseAdmin
+      .from('kv_store')
+      .select('value')
+      .like('key', `${prefix}%`);
+      
+    if (error) {
+      console.error('Supabase KV list error', error);
+      return [];
+    }
+    
+    if (!data) return [];
+    
+    return data.map(row => row.value as WarSnapshot).sort((a, b) => a.battleDay - b.battleDay);
+  } catch (e) {
+    console.error('Supabase KV list exception', e);
+    return [];
+  }
 }
 
 export async function saveLiveWar(snapshot: WarSnapshot) {
