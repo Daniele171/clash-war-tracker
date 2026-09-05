@@ -5,20 +5,11 @@ import { useRouter } from 'next/navigation';
 import { Suspense } from 'react';
 import { createClient } from '@/utils/supabase/client';
 
-// Convert username to internal email format.
-// If the input already contains '@', treat it as a full email (for legacy/admin accounts).
-// Otherwise, append @clan.local (for normal clan members).
-function usernameToEmail(username: string): string {
-  if (username.includes('@')) return username; // already a full email
-  const sanitized = username.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_.-]/g, '');
-  return `${sanitized}@clan.local`;
-}
-
 function LoginForm() {
   const router = useRouter();
   const supabase = createClient();
   
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -28,16 +19,15 @@ function LoginForm() {
     setError('');
     setLoading(true);
     try {
-      const internalEmail = usernameToEmail(username.trim());
       const { error } = await supabase.auth.signInWithPassword({
-        email: internalEmail,
+        email: email.trim(),
         password,
       });
       if (error) throw error;
       router.push('/dashboard');
       router.refresh();
     } catch (err: any) {
-      setError('Username o password non validi');
+      setError('Email o password non validi');
     } finally {
       setLoading(false);
     }
@@ -57,15 +47,15 @@ function LoginForm() {
         <div className="bg-bg-card border border-border-gold rounded-2xl p-6 shadow-[0_8px_40px_rgba(0,0,0,0.5)]">
           <form onSubmit={handleLogin} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-rajdhani font-bold text-[#8888a8] uppercase tracking-wider pl-1">Email o Nome Clash Royale</label>
+              <label className="text-[11px] font-rajdhani font-bold text-[#8888a8] uppercase tracking-wider pl-1">Email</label>
               <input
-                type="text"
-                value={username}
-                onChange={e => setUsername(e.target.value)}
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
                 required
                 autoFocus
-                autoComplete="username"
-                placeholder="email@esempio.com o rigno"
+                autoComplete="email"
+                placeholder="email@esempio.com"
                 className="bg-[rgba(12,12,28,0.6)] border border-border-gold rounded-xl px-4 py-3.5 text-[15px] text-white placeholder-[#444466] focus:outline-none focus:border-cr-gold focus:bg-[rgba(20,20,40,0.8)] transition-all shadow-inner"
               />
             </div>
