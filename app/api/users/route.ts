@@ -53,23 +53,20 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json()
-    const { password, role } = body
-    // Support both 'username' (new) and 'email' (legacy) field
+    const { password, role, email } = body
     const username = body.username || (body.email ? body.email.replace('@clan.local', '').replace(/@.*/, '') : null)
 
-    if (!username || !password) {
-      return NextResponse.json({ error: 'Username e Password sono obbligatori' }, { status: 400 })
+    if (!username || !password || !email) {
+      return NextResponse.json({ error: 'Email, Username e Password sono obbligatori' }, { status: 400 })
     }
 
     if (password.length < 6) {
       return NextResponse.json({ error: 'La password deve avere almeno 6 caratteri' }, { status: 400 })
     }
-
-    const internalEmail = usernameToEmail(username)
     
     const adminAuthClient = createAdminClient()
     const { data, error } = await adminAuthClient.auth.admin.createUser({
-      email: internalEmail,
+      email: email, // Usiamo l'email vera inserita dal form
       password: password,
       email_confirm: true, // Skip email verification
       user_metadata: { 

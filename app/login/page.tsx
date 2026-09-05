@@ -56,10 +56,8 @@ function LoginForm() {
 
         <div className="bg-bg-card border border-border-gold rounded-2xl p-6 shadow-[0_8px_40px_rgba(0,0,0,0.5)]">
           <form onSubmit={handleLogin} className="flex flex-col gap-4">
-            <div>
-              <label className="block text-[11px] text-[#8888a8] font-semibold uppercase tracking-wider mb-1.5">
-                Username
-              </label>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-rajdhani font-bold text-[#8888a8] uppercase tracking-wider pl-1">Email o Nome Clash Royale</label>
               <input
                 type="text"
                 value={username}
@@ -67,14 +65,12 @@ function LoginForm() {
                 required
                 autoFocus
                 autoComplete="username"
-                placeholder="Il tuo nome nel clan (es. rigno)"
-                className="w-full bg-[#0c0c1c] border border-border-gold rounded-lg px-3.5 py-2.5 text-[14px] text-white placeholder-[#555575] focus:outline-none focus:border-cr-gold focus:ring-1 focus:ring-cr-gold transition-colors"
+                placeholder="email@esempio.com o rigno"
+                className="bg-[rgba(12,12,28,0.6)] border border-border-gold rounded-xl px-4 py-3.5 text-[15px] text-white placeholder-[#444466] focus:outline-none focus:border-cr-gold focus:bg-[rgba(20,20,40,0.8)] transition-all shadow-inner"
               />
             </div>
-            <div>
-              <label className="block text-[11px] text-[#8888a8] font-semibold uppercase tracking-wider mb-1.5">
-                Password
-              </label>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-rajdhani font-bold text-[#8888a8] uppercase tracking-wider pl-1">Password</label>
               <input
                 type="password"
                 value={password}
@@ -82,7 +78,7 @@ function LoginForm() {
                 required
                 autoComplete="current-password"
                 placeholder="••••••••"
-                className="w-full bg-[#0c0c1c] border border-border-gold rounded-lg px-3.5 py-2.5 text-[14px] text-white placeholder-[#555575] focus:outline-none focus:border-cr-gold focus:ring-1 focus:ring-cr-gold transition-colors"
+                className="bg-[rgba(12,12,28,0.6)] border border-border-gold rounded-xl px-4 py-3.5 text-[15px] text-white placeholder-[#444466] focus:outline-none focus:border-cr-gold focus:bg-[rgba(20,20,40,0.8)] transition-all shadow-inner tracking-widest font-mono"
               />
             </div>
             {error && <div className="bg-[rgba(220,38,38,0.12)] border border-[rgba(220,38,38,0.4)] text-[#f87171] text-[13px] rounded-lg px-3.5 py-2.5">❌ {error}</div>}

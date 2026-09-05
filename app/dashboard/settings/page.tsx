@@ -14,6 +14,7 @@ export default function SettingsTab() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [users, setUsers] = useState<AppUser[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
+  const [newEmail, setNewEmail] = useState('');
   const [newUsername, setNewUsername] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [newRole, setNewRole] = useState<'viewer' | 'admin'>('viewer');
@@ -43,9 +44,10 @@ export default function SettingsTab() {
     e.preventDefault();
     setCreateMsg('');
     setCreating(true);
-    const trimmed = newUsername.trim();
-    if (!trimmed || !newPassword) {
-      setCreateMsg('Errore: Username e Password sono obbligatori');
+    const trimmedUsername = newUsername.trim();
+    const trimmedEmail = newEmail.trim();
+    if (!trimmedUsername || !newPassword || !trimmedEmail) {
+      setCreateMsg('Errore: Email, Username e Password sono obbligatori');
       setCreating(false);
       return;
     }
@@ -53,11 +55,12 @@ export default function SettingsTab() {
       const res = await fetch('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: trimmed, password: newPassword, role: newRole }),
+        body: JSON.stringify({ email: trimmedEmail, username: trimmedUsername, password: newPassword, role: newRole }),
       });
       const data = await res.json();
       if (res.ok) {
-        setCreateMsg('OK: Utente "' + trimmed + '" creato! Al primo accesso dovra cambiare la password.');
+        setCreateMsg('OK: Utente "' + trimmedUsername + '" creato! Al primo accesso dovra cambiare la password.');
+        setNewEmail('');
         setNewUsername('');
         setNewPassword('');
         loadUsers();
@@ -96,9 +99,20 @@ export default function SettingsTab() {
               Lo username deve corrispondere al nome del giocatore nel clan. Al primo accesso l utente dovra cambiare la password.
             </p>
             <form onSubmit={handleCreate} className="flex flex-col gap-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] text-[#8888a8] uppercase tracking-wider">Username (nome giocatore)</label>
+                  <label className="text-[10px] text-[#8888a8] uppercase tracking-wider">Email (reale)</label>
+                  <input
+                    type="email"
+                    value={newEmail}
+                    onChange={e => setNewEmail(e.target.value)}
+                    required
+                    placeholder="email@esempio.com"
+                    className="bg-[#0c0c1c] border border-border-gold rounded-lg px-3 py-2 text-[13px] text-white placeholder-[#555575] focus:outline-none focus:border-cr-gold transition-colors"
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] text-[#8888a8] uppercase tracking-wider">Nome Clash Royale</label>
                   <input
                     type="text"
                     value={newUsername}
@@ -109,7 +123,7 @@ export default function SettingsTab() {
                   />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] text-[#8888a8] uppercase tracking-wider">Password Temporanea</label>
+                  <label className="text-[10px] text-[#8888a8] uppercase tracking-wider">Password Temp</label>
                   <input
                     type="text"
                     value={newPassword}
