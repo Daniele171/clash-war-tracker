@@ -99,7 +99,7 @@ export default function PlayerModal({ tag, onClose }: PlayerModalProps) {
                 </div>
                 <div className="bg-bg-card rounded-xl p-3 border border-border-gold">
                   <div className="text-[10px] text-[#8888a8] uppercase tracking-wider mb-1">Carte Sbloccate</div>
-                  <div className="font-rajdhani text-[20px] font-bold text-white">{data.cards} <span className="text-[12px] text-[#8888a8] font-sans">/ 115</span></div>
+                  <div className="font-rajdhani text-[20px] font-bold text-white">{data.cards} </div>
                 </div>
                 <div className="bg-bg-card rounded-xl p-3 border border-border-gold">
                   <div className="text-[10px] text-[#8888a8] uppercase tracking-wider mb-1">Vittorie War</div>
