@@ -5,6 +5,7 @@ export interface ClanMember {
   name: string;
   role: string;
   active: boolean;
+  joinedDate?: string;
 }
 
 export interface WarSnapshot {

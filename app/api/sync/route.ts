@@ -29,7 +29,8 @@ export async function GET(request: Request) {
         tag: am.tag,
         name: am.name,
         role: am.role,
-        active: true
+        active: true,
+        joinedDate: existing?.joinedDate || new Date().toISOString()
       };
     });
     // Mark missing as inactive
