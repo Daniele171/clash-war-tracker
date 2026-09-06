@@ -59,3 +59,81 @@
     @apply inline-flex items-center gap-1 px-2 py-[3px] rounded-full text-[11px] font-semibold whitespace-nowrap border;
   }
 }
+
+/* ── Premium Animations ─────────────────────────────────────── */
+
+@keyframes welcomeIn {
+  from { opacity: 0; transform: scale(0.82) translateY(20px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-6px); }
+}
+
+@keyframes float-particle {
+  0%, 100% { transform: translateY(0) scale(1);   opacity: 0.6; }
+  50%       { transform: translateY(-18px) scale(1.3); opacity: 1; }
+}
+
+@keyframes progress-fill {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+
+@keyframes pulse-r {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.55; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Stagger row animation */
+@keyframes rowIn {
+  from { opacity: 0; transform: translateX(-10px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.row-animate {
+  animation: rowIn 0.25s ease both;
+}
+
+/* Number count-up (applied via JS inline style animation-duration) */
+@property --num {
+  syntax: '<integer>';
+  initial-value: 0;
+  inherits: false;
+}
+
+.stat-card {
+  transition: box-shadow 0.25s ease, border-color 0.25s ease, transform 0.2s ease;
+}
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 24px rgba(240,192,48,0.18), 0 4px 24px rgba(0,0,0,0.45);
+  border-color: rgba(240,192,48,0.45);
+}
+
+/* Danger row pulse */
+.row-danger {
+  animation: pulse-r 2.5s ease-in-out infinite;
+}
