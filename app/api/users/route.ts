@@ -99,6 +99,14 @@ export async function DELETE(request: Request) {
     }
 
     const adminAuthClient = createAdminClient()
+    
+    // Controlla se è l'admin assoluto
+    const { data: targetData, error: fetchErr } = await adminAuthClient.auth.admin.getUserById(id)
+    if (fetchErr) throw fetchErr
+    if (targetData.user.email === 'grazioso.daniele7@gmail.com') {
+      return NextResponse.json({ error: 'Questo è l\'Amministratore Assoluto e non può essere eliminato.' }, { status: 403 })
+    }
+
     const { error } = await adminAuthClient.auth.admin.deleteUser(id)
 
     if (error) throw error
@@ -132,6 +140,10 @@ export async function PATCH(request: Request) {
     // Ottieni l'utente attuale per preservare il suo username nei metadata
     const { data: userData, error: userError } = await adminAuthClient.auth.admin.getUserById(id)
     if (userError) throw userError
+
+    if (userData.user.email === 'grazioso.daniele7@gmail.com' && role !== 'admin') {
+      return NextResponse.json({ error: 'Questo è l\'Amministratore Assoluto e non può essere declassato.' }, { status: 403 })
+    }
 
     const currentMetadata = userData.user.user_metadata || {}
 

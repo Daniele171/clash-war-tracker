@@ -204,20 +204,28 @@ export default function SettingsTab() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleChangeRole(u.id, u.username, u.role)}
-                        className="text-[11px] px-2.5 py-1 rounded border border-border-gold text-[#8888a8] hover:border-cr-gold hover:text-cr-gold transition-colors"
-                        title={u.role === 'admin' ? 'Declassa a Membro' : 'Promuovi ad Admin'}
-                      >
-                        {u.role === 'admin' ? '↓ Declassa' : '↑ Promuovi'}
-                      </button>
-                      <button
-                        onClick={() => handleDelete(u.id, u.username)}
-                        className="text-[11px] px-2.5 py-1 rounded border border-border-gold text-[#8888a8] hover:border-red-500 hover:text-red-400 transition-colors"
-                        title="Elimina utente"
-                      >
-                        Elimina
-                      </button>
+                      {u.email !== 'grazioso.daniele7@gmail.com' ? (
+                        <>
+                          <button
+                            onClick={() => handleChangeRole(u.id, u.username, u.role)}
+                            className="text-[11px] px-2.5 py-1 rounded border border-border-gold text-[#8888a8] hover:border-cr-gold hover:text-cr-gold transition-colors"
+                            title={u.role === 'admin' ? 'Declassa a Membro' : 'Promuovi ad Admin'}
+                          >
+                            {u.role === 'admin' ? '↓ Declassa' : '↑ Promuovi'}
+                          </button>
+                          <button
+                            onClick={() => handleDelete(u.id, u.username)}
+                            className="text-[11px] px-2.5 py-1 rounded border border-border-gold text-[#8888a8] hover:border-red-500 hover:text-red-400 transition-colors"
+                            title="Elimina utente"
+                          >
+                            Elimina
+                          </button>
+                        </>
+                      ) : (
+                        <span className="text-[10px] text-cr-gold font-bold px-2 py-1 bg-[rgba(240,192,48,0.1)] rounded border border-[rgba(240,192,48,0.3)]" title="Amministratore Assoluto intoccabile">
+                          👑 Assoluto
+                        </span>
+                      )}
                     </div>
                   </div>
                 ))}
