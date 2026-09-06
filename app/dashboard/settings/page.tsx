@@ -85,6 +85,25 @@ export default function SettingsTab() {
     else alert('Errore eliminazione');
   };
 
+  const handleChangeRole = async (id: string, username: string, currentRole: string) => {
+    const newRole = currentRole === 'admin' ? 'viewer' : 'admin';
+    const action = newRole === 'admin' ? 'Promuovere ad Admin' : 'Declassare a Membro';
+    if (!confirm(`${action} l'utente "${username}"?`)) return;
+    
+    const res = await fetch('/api/users', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, role: newRole }),
+    });
+    
+    if (res.ok) {
+      loadUsers();
+    } else {
+      const data = await res.json().catch(()=>({}));
+      alert('Errore: ' + (data.error || 'Impossibile cambiare ruolo'));
+    }
+  };
+
   return (
     <>
       {isAdmin && (
@@ -184,13 +203,22 @@ export default function SettingsTab() {
                         Creato: {new Date(u.createdAt).toLocaleDateString('it-IT')}
                       </div>
                     </div>
-                    <button
-                      onClick={() => handleDelete(u.id, u.username)}
-                      className="text-[11px] px-2.5 py-1 rounded border border-border-gold text-[#8888a8] hover:border-red-500 hover:text-red-400 transition-colors"
-                      title="Elimina utente"
-                    >
-                      Elimina
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleChangeRole(u.id, u.username, u.role)}
+                        className="text-[11px] px-2.5 py-1 rounded border border-border-gold text-[#8888a8] hover:border-cr-gold hover:text-cr-gold transition-colors"
+                        title={u.role === 'admin' ? 'Declassa a Membro' : 'Promuovi ad Admin'}
+                      >
+                        {u.role === 'admin' ? '↓ Declassa' : '↑ Promuovi'}
+                      </button>
+                      <button
+                        onClick={() => handleDelete(u.id, u.username)}
+                        className="text-[11px] px-2.5 py-1 rounded border border-border-gold text-[#8888a8] hover:border-red-500 hover:text-red-400 transition-colors"
+                        title="Elimina utente"
+                      >
+                        Elimina
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>

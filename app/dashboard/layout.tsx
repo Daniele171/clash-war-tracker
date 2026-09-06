@@ -291,6 +291,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <span className="animate-[fadeIn_0.5s_ease]">
                     {isAdmin ? '👑' : '👤'} {userInfo.username}
                     {isAdmin && <span className="ml-1 text-cr-gold/60">· Admin</span>}
+                    {!isAdmin && <span className="ml-2 px-1.5 py-0.5 rounded-full bg-[rgba(99,102,241,0.15)] border border-[rgba(99,102,241,0.4)] text-[#a78bfa] text-[9px] uppercase tracking-wider" title="Puoi visualizzare i dati in tempo reale ma non puoi gestire le giustificazioni o forzare l'aggiornamento">Viewer Mode</span>}
                   </span>
                 </div>
               )}

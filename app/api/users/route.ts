@@ -108,3 +108,44 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }
+
+// PATCH change user role
+export async function PATCH(request: Request) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user || user.user_metadata?.role !== 'admin') {
+    return NextResponse.json({ error: 'Non autorizzato' }, { status: 403 })
+  }
+
+  try {
+    const { id, role } = await request.json()
+    if (!id || !role) {
+      return NextResponse.json({ error: 'ID e nuovo ruolo sono obbligatori' }, { status: 400 })
+    }
+
+    if (id === user.id && role !== 'admin') {
+      return NextResponse.json({ error: 'Non puoi toglierti i permessi da admin da solo' }, { status: 400 })
+    }
+
+    const adminAuthClient = createAdminClient()
+    
+    // Ottieni l'utente attuale per preservare il suo username nei metadata
+    const { data: userData, error: userError } = await adminAuthClient.auth.admin.getUserById(id)
+    if (userError) throw userError
+
+    const currentMetadata = userData.user.user_metadata || {}
+
+    const { error } = await adminAuthClient.auth.admin.updateUserById(id, {
+      user_metadata: { 
+        ...currentMetadata,
+        role: role
+      }
+    })
+
+    if (error) throw error
+
+    return NextResponse.json({ success: true })
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 })
+  }
+}
