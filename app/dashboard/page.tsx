@@ -12,6 +12,26 @@ export default function WarTab() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
 
+  type SortField = 'default' | 'name' | 'medals' | 'decks' | 'week' | 'status';
+  type SortDirection = 'asc' | 'desc';
+  
+  const [sortField, setSortField] = useState<SortField>('default');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection(field === 'name' || field === 'status' ? 'asc' : 'desc');
+    }
+  };
+
+  const renderSortArrow = (field: SortField) => {
+    if (sortField !== field) return <span className="opacity-30 ml-1">↕</span>;
+    return sortDirection === 'asc' ? <span className="text-cr-gold ml-1">▲</span> : <span className="text-cr-gold ml-1">▼</span>;
+  };
+
   useEffect(() => {
     fetch('/api/auth/me').then(r => r.json()).then(d => {
       if (d.username) setCurrentUsername(d.username.toLowerCase());
@@ -70,13 +90,30 @@ export default function WarTab() {
   const rateColor = rate >= 80 ? '#4ade80' : rate >= 50 ? '#fb923c' : '#f87171';
 
   const sorted = [...participants].sort((a: any, b: any) => {
-    if (isCurrentUser(a.name) && !isCurrentUser(b.name)) return -1;
-    if (!isCurrentUser(a.name) && isCurrentUser(b.name)) return 1;
-    const statusOrder = { absent: 0, partial: 1, pending: 2, ok: 3, excused: 4 };
-    const aOrder = statusOrder[a.status as keyof typeof statusOrder] ?? 3;
-    const bOrder = statusOrder[b.status as keyof typeof statusOrder] ?? 3;
-    if (aOrder !== bOrder) return aOrder - bOrder;
-    return (b.medals || 0) - (a.medals || 0);
+    if (sortField === 'default') {
+      if (isCurrentUser(a.name) && !isCurrentUser(b.name)) return -1;
+      if (!isCurrentUser(a.name) && isCurrentUser(b.name)) return 1;
+      const statusOrder = { absent: 0, partial: 1, pending: 2, ok: 3, excused: 4 };
+      const aOrder = statusOrder[a.status as keyof typeof statusOrder] ?? 3;
+      const bOrder = statusOrder[b.status as keyof typeof statusOrder] ?? 3;
+      if (aOrder !== bOrder) return aOrder - bOrder;
+      return (b.medals || 0) - (a.medals || 0);
+    }
+    
+    let cmp = 0;
+    if (sortField === 'name') {
+      cmp = a.name.localeCompare(b.name);
+    } else if (sortField === 'medals') {
+      cmp = (a.medals || 0) - (b.medals || 0);
+    } else if (sortField === 'decks') {
+      cmp = (a.decksUsedToday || 0) - (b.decksUsedToday || 0);
+    } else if (sortField === 'week') {
+      cmp = (a.decksUsed || 0) - (b.decksUsed || 0);
+    } else if (sortField === 'status') {
+      const statusOrder = { absent: 0, partial: 1, pending: 2, ok: 3, excused: 4 };
+      cmp = (statusOrder[a.status as keyof typeof statusOrder] ?? 3) - (statusOrder[b.status as keyof typeof statusOrder] ?? 3);
+    }
+    return sortDirection === 'asc' ? cmp : -cmp;
   });
 
   const missingDecksPlayers = sorted.filter(p => p.status === 'absent' || p.status === 'partial');
@@ -200,11 +237,29 @@ export default function WarTab() {
           <table className="w-full border-collapse min-w-[560px]">
             <thead>
               <tr>
-                {['#', 'Giocatore', '🏅 Medaglie', 'Mazzi oggi', 'Settimana', 'Stato', ...(isAdmin ? ['Azioni'] : [])].map(h => (
-                  <th key={h} className="bg-[rgba(240,192,48,0.04)] text-[#8888a8] text-[10px] font-bold uppercase tracking-widest px-3 py-3 text-left border-b border-border-gold">
-                    {h}
+                <th className="bg-[rgba(240,192,48,0.04)] text-[#8888a8] text-[10px] font-bold uppercase tracking-widest px-3 py-3 text-left border-b border-border-gold w-10">
+                  <button onClick={() => handleSort('default')} className="hover:text-white flex items-center">#{renderSortArrow('default')}</button>
+                </th>
+                <th className="bg-[rgba(240,192,48,0.04)] text-[#8888a8] text-[10px] font-bold uppercase tracking-widest px-3 py-3 text-left border-b border-border-gold">
+                  <button onClick={() => handleSort('name')} className="hover:text-white flex items-center">Giocatore{renderSortArrow('name')}</button>
+                </th>
+                <th className="bg-[rgba(240,192,48,0.04)] text-[#8888a8] text-[10px] font-bold uppercase tracking-widest px-3 py-3 text-left border-b border-border-gold">
+                  <button onClick={() => handleSort('medals')} className="hover:text-white flex items-center">🏅 Medaglie{renderSortArrow('medals')}</button>
+                </th>
+                <th className="bg-[rgba(240,192,48,0.04)] text-[#8888a8] text-[10px] font-bold uppercase tracking-widest px-3 py-3 text-left border-b border-border-gold">
+                  <button onClick={() => handleSort('decks')} className="hover:text-white flex items-center">Mazzi Oggi{renderSortArrow('decks')}</button>
+                </th>
+                <th className="bg-[rgba(240,192,48,0.04)] text-[#8888a8] text-[10px] font-bold uppercase tracking-widest px-3 py-3 text-left border-b border-border-gold">
+                  <button onClick={() => handleSort('week')} className="hover:text-white flex items-center">Settimana{renderSortArrow('week')}</button>
+                </th>
+                <th className="bg-[rgba(240,192,48,0.04)] text-[#8888a8] text-[10px] font-bold uppercase tracking-widest px-3 py-3 text-left border-b border-border-gold">
+                  <button onClick={() => handleSort('status')} className="hover:text-white flex items-center">Stato{renderSortArrow('status')}</button>
+                </th>
+                {isAdmin && (
+                  <th className="bg-[rgba(240,192,48,0.04)] text-[#8888a8] text-[10px] font-bold uppercase tracking-widest px-3 py-3 text-left border-b border-border-gold">
+                    Azioni
                   </th>
-                ))}
+                )}
               </tr>
             </thead>
             <tbody>
