@@ -96,9 +96,12 @@ export default function PlayerModal({ tag, onClose }: PlayerModalProps) {
                   <span className="text-[28px] font-bold text-[#1a0a00] font-rajdhani">{data.expLevel || '?'}</span>
                 </div>
                 <div>
-                  <div className="font-rajdhani text-[24px] font-bold text-white leading-tight">{data.name}</div>
+                  <div className="font-rajdhani text-[24px] font-bold text-white leading-tight flex items-center gap-2">
+                    {data.name}
+                    {data.name === 'NobunagaYT' && <span className="text-[10px] bg-[rgba(240,192,48,0.2)] border border-[rgba(240,192,48,0.5)] text-cr-gold px-1.5 py-0.5 rounded uppercase tracking-wider font-bold shadow-[0_0_8px_rgba(240,192,48,0.3)]">👑 SVILUPPATORE</span>}
+                  </div>
                   <div className="text-[12px] text-cr-gold font-mono">{data.tag}</div>
-                  <div className="text-[11px] text-[#8888a8] uppercase tracking-wider mt-1">{data.role}</div>
+                  <div className="text-[11px] text-[#8888a8] uppercase tracking-wider mt-1">{data.name === 'NobunagaYT' ? 'Master Admin Assoluto' : data.role}</div>
                 </div>
               </div>
 

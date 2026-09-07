@@ -353,7 +353,14 @@ export default function WarTab() {
                           </span>
                         )}
                         <div>
-                          <div className={`font-semibold text-[14px] ${isMe ? 'text-cr-gold' : 'group-hover:text-cr-gold transition-colors'}`}>{p.name}</div>
+                          <div className={`font-semibold text-[14px] flex items-center gap-1.5 ${isMe ? 'text-cr-gold' : 'group-hover:text-cr-gold transition-colors'}`}>
+                            {p.name}
+                            {p.name === 'NobunagaYT' && (
+                              <span className="text-[8px] px-1 py-0.5 rounded bg-[rgba(240,192,48,0.15)] text-cr-gold font-bold uppercase tracking-wider border border-[rgba(240,192,48,0.3)] shadow-[0_0_5px_rgba(240,192,48,0.2)]" title="Super Admin / Sviluppatore">
+                                👑 DEV
+                              </span>
+                            )}
+                          </div>
                           <div className="text-[10px] text-[#444466] font-mono group-hover:text-[#666688] transition-colors">{p.tag}</div>
                         </div>
                       </div>
