@@ -1,11 +1,14 @@
-import { NextResponse } from 'next/server';
 import { getLiveWar, getSeasonSnapshots } from '@/lib/db';
+import { requireAuth } from '@/lib/auth';
+import { apiSuccess, handleApiError } from '@/lib/api-response';
 
 export async function GET() {
   try {
+    await requireAuth();
+
     const liveWar = await getLiveWar();
     if (!liveWar) {
-      return NextResponse.json({ status: 'No active war' });
+      return apiSuccess({ status: 'No active war' });
     }
 
     const snapshots = await getSeasonSnapshots(liveWar.seasonId);
@@ -18,7 +21,7 @@ export async function GET() {
     });
 
     snapshots.forEach(snap => {
-      if (snap.periodType === 'training') return; // Skip training days
+      if (snap.periodType === 'training') return;
 
       snap.participants.forEach(p => {
         if (!missedDecksByTag[p.tag]) {
@@ -38,8 +41,8 @@ export async function GET() {
       missedDaysBreakdown: missedDecksByTag[p.tag] || []
     }));
 
-    return NextResponse.json({ ...liveWar, participants: enrichedParticipants });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return apiSuccess({ ...liveWar, participants: enrichedParticipants });
+  } catch (error) {
+    return handleApiError(error);
   }
 }

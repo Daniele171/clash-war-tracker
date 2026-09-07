@@ -1,55 +1,42 @@
-import { NextResponse } from 'next/server';
-import { setExcuse, removeExcuse, getJson } from '@/lib/db';
-import { createClient } from '@/utils/supabase/server';
+import { requirePermission } from '@/lib/auth';
+import { apiSuccess, apiError, handleApiError } from '@/lib/api-response';
+import { setExcuse, removeExcuse } from '@/lib/db';
 
 export async function POST(request: Request) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user || user.user_metadata?.role !== 'admin') {
-      return NextResponse.json({ error: 'Solo gli admin possono giustificare' }, { status: 403 });
+    await requirePermission('adminCanExcuse');
+
+    const body = await request.json().catch(() => ({}));
+    const { tag, reason } = body;
+    
+    if (!tag || typeof tag !== 'string') {
+      return apiError('Tag mancante o non valido', 400);
     }
 
-    const isMaster = user.email === 'grazioso.daniele7@gmail.com';
-    const perms = (await getJson('cwt:settings:permissions')) || {};
-    if (!isMaster && perms.adminCanExcuse === false) {
-      return NextResponse.json({ error: 'Permesso negato dal Master Admin' }, { status: 403 })
-    }
+    const cleanTag = tag.trim();
+    const cleanReason = typeof reason === 'string' && reason.trim() ? reason.trim() : 'Giustificato';
 
-    const { tag, reason } = await request.json();
-    if (!tag) {
-      return NextResponse.json({ error: 'Tag mancante' }, { status: 400 });
-    }
-
-    await setExcuse(tag, reason || 'Giustificato');
-    return NextResponse.json({ success: true });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    await setExcuse(cleanTag, cleanReason);
+    return apiSuccess({ success: true });
+  } catch (error) {
+    return handleApiError(error);
   }
 }
 
 export async function DELETE(request: Request) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user || user.user_metadata?.role !== 'admin') {
-      return NextResponse.json({ error: 'Solo gli admin possono gestire le giustificazioni' }, { status: 403 });
+    await requirePermission('adminCanExcuse');
+
+    const body = await request.json().catch(() => ({}));
+    const { tag } = body;
+
+    if (!tag || typeof tag !== 'string') {
+      return apiError('Tag mancante o non valido', 400);
     }
 
-    const isMaster = user.email === 'grazioso.daniele7@gmail.com';
-    const perms = (await getJson('cwt:settings:permissions')) || {};
-    if (!isMaster && perms.adminCanExcuse === false) {
-      return NextResponse.json({ error: 'Permesso negato dal Master Admin' }, { status: 403 })
-    }
-
-    const { tag } = await request.json();
-    if (!tag) {
-      return NextResponse.json({ error: 'Tag mancante' }, { status: 400 });
-    }
-
-    await removeExcuse(tag);
-    return NextResponse.json({ success: true });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    await removeExcuse(tag.trim());
+    return apiSuccess({ success: true });
+  } catch (error) {
+    return handleApiError(error);
   }
 }

@@ -1,182 +1,161 @@
-import { NextResponse } from 'next/server'
-import { createAdminClient } from '@/utils/supabase/admin'
-import { createClient } from '@/utils/supabase/server'
-import { getJson } from '@/lib/db'
+import { requireAdmin, requirePermission } from '@/lib/auth';
+import { apiSuccess, apiError, handleApiError } from '@/lib/api-response';
+import { MASTER_ADMIN_EMAIL } from '@/lib/constants';
+import { createAdminClient } from '@/utils/supabase/admin';
 
-// Convert username to internal email format
-function usernameToEmail(username: string): string {
-  // Sanitize: lowercase, remove spaces, keep only alphanumerics and some safe chars
-  const sanitized = username.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_.-]/g, '');
-  return `${sanitized}@clan.local`;
-}
-
-// Extract username from internal email
 function emailToUsername(email: string): string {
   if (email.endsWith('@clan.local')) {
     return email.replace('@clan.local', '');
   }
-  return email; // fallback for legacy accounts
+  return email;
 }
 
-// GET all users
+// GET all users (Admin only)
 export async function GET() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user || user.user_metadata?.role !== 'admin') {
-    return NextResponse.json({ error: 'Non autorizzato' }, { status: 403 })
+  try {
+    await requireAdmin();
+
+    const adminAuthClient = createAdminClient();
+    const { data, error } = await adminAuthClient.auth.admin.listUsers();
+    
+    if (error) {
+      return apiError(error.message, 500);
+    }
+
+    const users = data.users.map(u => ({
+      id: u.id,
+      email: u.email,
+      username: u.user_metadata?.username || emailToUsername(u.email || ''),
+      role: u.user_metadata?.role || 'viewer',
+      createdAt: u.created_at
+    }));
+
+    return apiSuccess(users);
+  } catch (error) {
+    return handleApiError(error);
   }
-
-  const adminAuthClient = createAdminClient()
-  const { data, error } = await adminAuthClient.auth.admin.listUsers()
-  
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
-  }
-
-  const users = data.users.map(u => ({
-    id: u.id,
-    email: u.email,
-    username: u.user_metadata?.username || emailToUsername(u.email || ''),
-    role: u.user_metadata?.role || 'viewer',
-    createdAt: u.created_at
-  }))
-
-  return NextResponse.json(users)
 }
 
-// POST create user
+// POST create user (Dynamic permission check)
 export async function POST(request: Request) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user || user.user_metadata?.role !== 'admin') {
-    return NextResponse.json({ error: 'Non autorizzato' }, { status: 403 })
-  }
-
-  const isMaster = user.email === 'grazioso.daniele7@gmail.com';
-  const perms = (await getJson('cwt:settings:permissions')) || {};
-  if (!isMaster && !perms.adminCanCreateUser) {
-    return NextResponse.json({ error: 'Permesso negato dal Master Admin' }, { status: 403 })
-  }
-
   try {
-    const body = await request.json()
-    const { password, role, email } = body
-    const username = body.username || (body.email ? body.email.replace('@clan.local', '').replace(/@.*/, '') : null)
+    await requirePermission('adminCanCreateUser');
+
+    const body = await request.json().catch(() => ({}));
+    const { password, role, email } = body;
+    const username = body.username || (email ? email.replace('@clan.local', '').replace(/@.*/, '') : null);
 
     if (!username || !password || !email) {
-      return NextResponse.json({ error: 'Email, Username e Password sono obbligatori' }, { status: 400 })
+      return apiError('Email, Username e Password sono obbligatori', 400);
     }
 
-    if (password.length < 6) {
-      return NextResponse.json({ error: 'La password deve avere almeno 6 caratteri' }, { status: 400 })
+    if (typeof password !== 'string' || password.length < 6) {
+      return apiError('La password deve avere almeno 6 caratteri', 400);
     }
-    
-    const adminAuthClient = createAdminClient()
+
+    const adminAuthClient = createAdminClient();
     const { data, error } = await adminAuthClient.auth.admin.createUser({
-      email: email, // Usiamo l'email vera inserita dal form
+      email: email.trim(),
       password: password,
-      email_confirm: true, // Skip email verification
+      email_confirm: true,
       user_metadata: { 
-        username: username, // Store the original display name
+        username: username.trim(),
         role: role || 'viewer',
-        must_change_password: true // Force password change on first login
+        must_change_password: true
       }
-    })
+    });
 
-    if (error) throw error
+    if (error) {
+      return apiError(error.message, 400);
+    }
 
-    return NextResponse.json({ success: true, user: data.user })
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 400 })
+    return apiSuccess({ success: true, user: data.user });
+  } catch (error) {
+    return handleApiError(error);
   }
 }
 
-// DELETE user
+// DELETE user (Dynamic permission check)
 export async function DELETE(request: Request) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user || user.user_metadata?.role !== 'admin') {
-    return NextResponse.json({ error: 'Non autorizzato' }, { status: 403 })
-  }
-
-  const isMaster = user.email === 'grazioso.daniele7@gmail.com';
-  const perms = (await getJson('cwt:settings:permissions')) || {};
-  if (!isMaster && !perms.adminCanDeleteUser) {
-    return NextResponse.json({ error: 'Permesso negato dal Master Admin' }, { status: 403 })
-  }
-
   try {
-    const { id } = await request.json()
-    if (id === user.id) {
-      return NextResponse.json({ error: 'Non puoi eliminare te stesso' }, { status: 400 })
+    const auth = await requirePermission('adminCanDeleteUser');
+
+    const body = await request.json().catch(() => ({}));
+    const { id } = body;
+
+    if (!id || typeof id !== 'string') {
+      return apiError('ID utente non valido', 400);
     }
 
-    const adminAuthClient = createAdminClient()
+    if (id === auth.user.id) {
+      return apiError('Non puoi eliminare te stesso', 400);
+    }
+
+    const adminAuthClient = createAdminClient();
     
-    // Controlla se è l'admin assoluto
-    const { data: targetData, error: fetchErr } = await adminAuthClient.auth.admin.getUserById(id)
-    if (fetchErr) throw fetchErr
-    if (targetData.user.email === 'grazioso.daniele7@gmail.com') {
-      return NextResponse.json({ error: 'Questo è l\'Amministratore Assoluto e non può essere eliminato.' }, { status: 403 })
+    // Check if target is Master Admin
+    const { data: targetData, error: fetchErr } = await adminAuthClient.auth.admin.getUserById(id);
+    if (fetchErr) {
+      return apiError(fetchErr.message, 500);
     }
 
-    const { error } = await adminAuthClient.auth.admin.deleteUser(id)
+    if (targetData.user.email === MASTER_ADMIN_EMAIL) {
+      return apiError('Questo è l\'Amministratore Assoluto e non può essere eliminato.', 403);
+    }
 
-    if (error) throw error
+    const { error } = await adminAuthClient.auth.admin.deleteUser(id);
+    if (error) {
+      return apiError(error.message, 500);
+    }
 
-    return NextResponse.json({ success: true })
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    return apiSuccess({ success: true });
+  } catch (error) {
+    return handleApiError(error);
   }
 }
 
-// PATCH change user role
+// PATCH change user role (Dynamic permission check)
 export async function PATCH(request: Request) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user || user.user_metadata?.role !== 'admin') {
-    return NextResponse.json({ error: 'Non autorizzato' }, { status: 403 })
-  }
-
-  const isMaster = user.email === 'grazioso.daniele7@gmail.com';
-  const perms = (await getJson('cwt:settings:permissions')) || {};
-  if (!isMaster && !perms.adminCanChangeRole) {
-    return NextResponse.json({ error: 'Permesso negato dal Master Admin' }, { status: 403 })
-  }
-
   try {
-    const { id, role } = await request.json()
-    if (!id || !role) {
-      return NextResponse.json({ error: 'ID e nuovo ruolo sono obbligatori' }, { status: 400 })
+    const auth = await requirePermission('adminCanChangeRole');
+
+    const body = await request.json().catch(() => ({}));
+    const { id, role } = body;
+
+    if (!id || !role || typeof id !== 'string' || typeof role !== 'string') {
+      return apiError('ID e nuovo ruolo sono obbligatori', 400);
     }
 
-    if (id === user.id && role !== 'admin') {
-      return NextResponse.json({ error: 'Non puoi toglierti i permessi da admin da solo' }, { status: 400 })
+    if (id === auth.user.id && role !== 'admin') {
+      return apiError('Non puoi toglierti i permessi da admin da solo', 400);
     }
 
-    const adminAuthClient = createAdminClient()
+    const adminAuthClient = createAdminClient();
     
-    // Ottieni l'utente attuale per preservare il suo username nei metadata
-    const { data: userData, error: userError } = await adminAuthClient.auth.admin.getUserById(id)
-    if (userError) throw userError
-
-    if (userData.user.email === 'grazioso.daniele7@gmail.com' && role !== 'admin') {
-      return NextResponse.json({ error: 'Questo è l\'Amministratore Assoluto e non può essere declassato.' }, { status: 403 })
+    const { data: userData, error: userError } = await adminAuthClient.auth.admin.getUserById(id);
+    if (userError) {
+      return apiError(userError.message, 500);
     }
 
-    const currentMetadata = userData.user.user_metadata || {}
+    if (userData.user.email === MASTER_ADMIN_EMAIL && role !== 'admin') {
+      return apiError('Questo è l\'Amministratore Assoluto e non può essere declassato.', 403);
+    }
+
+    const currentMetadata = userData.user.user_metadata || {};
 
     const { error } = await adminAuthClient.auth.admin.updateUserById(id, {
       user_metadata: { 
         ...currentMetadata,
         role: role
       }
-    })
+    });
 
-    if (error) throw error
+    if (error) {
+      return apiError(error.message, 500);
+    }
 
-    return NextResponse.json({ success: true })
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    return apiSuccess({ success: true });
+  } catch (error) {
+    return handleApiError(error);
   }
 }

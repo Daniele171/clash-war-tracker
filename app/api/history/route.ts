@@ -1,19 +1,22 @@
-import { NextResponse } from 'next/server';
 import { getRiverRaceLog } from '@/lib/cr-api';
 import { getMembers } from '@/lib/db';
+import { requireAuth } from '@/lib/auth';
+import { apiSuccess, apiError, handleApiError } from '@/lib/api-response';
 
 export async function GET() {
-  const tag = process.env.CLAN_TAG;
-  if (!tag) {
-    return NextResponse.json({ error: 'CLAN_TAG not configured' }, { status: 500 });
-  }
-
   try {
+    await requireAuth();
+
+    const tag = process.env.CLAN_TAG;
+    if (!tag) {
+      return apiError('CLAN_TAG non configurato', 500);
+    }
+
     const log = await getRiverRaceLog(tag);
     const dbMembers = await getMembers();
     const cleanTag = tag.startsWith('#') ? tag.toUpperCase() : '#' + tag.toUpperCase();
 
-    const history = log.items.map((item: any) => {
+    const history = (log.items || []).map((item: any) => {
       let ourClanData: any = null;
       let rank: number | null = null;
       let trophyChange: number | null = null;
@@ -42,13 +45,11 @@ export async function GET() {
       }
 
       if (!ourClanData) {
-        // Log in dev so we can debug future unknown structures
-        console.warn(`History: could not find clan ${cleanTag} in item`, JSON.stringify(Object.keys(item)));
         return null;
       }
 
       const participants = (ourClanData.participants || [])
-        .filter((p: any) => p.decksUsed > 0) // only those who actually played
+        .filter((p: any) => p.decksUsed > 0)
         .map((p: any) => {
           const m = dbMembers.find(dbm => dbm.tag === p.tag);
           return {
@@ -60,7 +61,7 @@ export async function GET() {
           };
         });
 
-      // Also include current members who did 0 attacks (they won't be in participants)
+      // Include current members who did 0 attacks
       const activeTags = new Set(participants.map((p: any) => p.tag));
       const memberList = dbMembers.filter(m => m.active);
       const absentees = memberList
@@ -88,9 +89,8 @@ export async function GET() {
       };
     }).filter(Boolean);
 
-    return NextResponse.json(history);
-  } catch (error: any) {
-    console.error('History API error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return apiSuccess(history);
+  } catch (error) {
+    return handleApiError(error);
   }
 }

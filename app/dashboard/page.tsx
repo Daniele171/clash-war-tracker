@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { MASTER_ADMIN_EMAIL } from '@/lib/constants';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
 import PlayerModal from './components/PlayerModal';
@@ -39,7 +40,7 @@ export default function WarTab() {
   useEffect(() => {
     fetch('/api/auth/me').then(r => r.json()).then(d => {
       if (d.username) setCurrentUsername(d.username.toLowerCase());
-      if (d.email === 'grazioso.daniele7@gmail.com') setIsMaster(true);
+      if (d.isMaster || d.email === MASTER_ADMIN_EMAIL) setIsMaster(true);
       if (d.role === 'admin') {
         setIsAdmin(true);
         fetch('/api/permissions').then(r => r.json()).then(pd => setPerms(pd.permissions));

@@ -3,11 +3,13 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { MASTER_ADMIN_EMAIL } from '@/lib/constants';
 
 interface UserInfo {
   username: string;
   email: string;
   role: 'admin' | 'viewer';
+  isMaster?: boolean;
 }
 
 const APP_VERSION = 'v2.0';
@@ -237,13 +239,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [doAutoSync, checkPatchNotes]);
 
   const isAdmin = userInfo?.role === 'admin';
-  const isMaster = userInfo?.email === 'grazioso.daniele7@gmail.com';
+  const isMaster = Boolean(userInfo?.isMaster || userInfo?.email === MASTER_ADMIN_EMAIL);
   const canForceSync = isMaster || (isAdmin && perms?.adminCanForceSync !== false);
 
   const handleSync = async () => {
     setIsSyncing(true);
     try {
-      const res = await fetch('/api/sync/me');
+      const res = await fetch('/api/sync/all');
       if (res.ok) {
         showToast('✅ Sincronizzazione completata!', 'success');
         setTimeout(() => window.location.reload(), 800);

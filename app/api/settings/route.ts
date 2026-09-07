@@ -1,44 +1,32 @@
-import { NextResponse } from 'next/server';
+import { requireMasterAdmin } from '@/lib/auth';
+import { apiSuccess, handleApiError } from '@/lib/api-response';
 import { getJson, setJson } from '@/lib/db';
-import { createClient } from '@/utils/supabase/server';
+import { TELEGRAM_SETTINGS_KEY } from '@/lib/constants';
 
-export async function GET(request: Request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user || user.user_metadata?.role !== 'admin') {
-    return NextResponse.json({ error: 'Non autorizzato' }, { status: 403 });
-  }
-
-  if (user.email !== 'grazioso.daniele7@gmail.com') {
-    return NextResponse.json({ error: 'Solo il Master Admin può accedere' }, { status: 403 });
-  }
-
+export async function GET() {
   try {
-    const tgSettings = await getJson('cwt:settings:telegram') || {};
-    return NextResponse.json(tgSettings);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    await requireMasterAdmin();
+    const tgSettings = (await getJson(TELEGRAM_SETTINGS_KEY)) || {};
+    return apiSuccess(tgSettings);
+  } catch (error) {
+    return handleApiError(error);
   }
 }
 
 export async function POST(request: Request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user || user.user_metadata?.role !== 'admin' || user.email !== 'grazioso.daniele7@gmail.com') {
-    return NextResponse.json({ error: 'Solo il Master Admin può modificare le impostazioni' }, { status: 403 });
-  }
-
   try {
-    const body = await request.json();
+    await requireMasterAdmin();
+    const body = await request.json().catch(() => ({}));
     const { token, chatId } = body;
 
-    const tgSettings = { token, chatId };
-    await setJson('cwt:settings:telegram', tgSettings);
+    const tgSettings = { 
+      token: typeof token === 'string' ? token.trim() : '', 
+      chatId: typeof chatId === 'string' ? chatId.trim() : '' 
+    };
+    await setJson(TELEGRAM_SETTINGS_KEY, tgSettings);
 
-    return NextResponse.json({ success: true, settings: tgSettings });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return apiSuccess({ success: true, settings: tgSettings });
+  } catch (error) {
+    return handleApiError(error);
   }
 }

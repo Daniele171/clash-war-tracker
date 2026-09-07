@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { MASTER_ADMIN_EMAIL } from '@/lib/constants';
 
 interface AppUser {
   id: string;
@@ -93,7 +94,7 @@ export default function SettingsTab() {
     fetch('/api/auth/me').then(r => r.json()).then(d => {
       if (d.email) {
         setCurrentUserEmail(d.email);
-        if (d.email === 'grazioso.daniele7@gmail.com') {
+        if (d.isMaster || d.email === MASTER_ADMIN_EMAIL) {
           loadTgSettings();
         }
       }
@@ -276,7 +277,7 @@ export default function SettingsTab() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      {u.email !== 'grazioso.daniele7@gmail.com' ? (
+                      {u.email !== MASTER_ADMIN_EMAIL ? (
                         <>
                           {(isMaster || perms?.adminCanChangeRole) && (
                             <button

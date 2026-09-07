@@ -1,20 +1,18 @@
-import { NextResponse } from 'next/server';
 import { getCurrentRiverRace, getClanMembers } from '@/lib/cr-api';
 import { getLiveWar, saveLiveWar, saveWarSnapshot, getMembers, saveMembers } from '@/lib/db';
 import { buildWarSnapshot } from '@/lib/war-utils';
+import { verifyCronSecret } from '@/lib/auth';
+import { apiSuccess, apiUnauthorized, apiError, handleApiError } from '@/lib/api-response';
 
 export async function GET(request: Request) {
-  // 1. Verify cron secret (if set)
-  const authHeader = request.headers.get('authorization');
-  const cronSecret = process.env.CRON_SECRET;
-  
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  // 1. Verify cron secret (fail-closed)
+  if (!verifyCronSecret(request)) {
+    return apiUnauthorized('Richiesta non autorizzata: secret non valido o mancante');
   }
 
   const tag = process.env.CLAN_TAG;
   if (!tag) {
-    return NextResponse.json({ error: 'CLAN_TAG not configured' }, { status: 500 });
+    return apiError('CLAN_TAG non configurato', 500);
   }
 
   try {
@@ -44,7 +42,7 @@ export async function GET(request: Request) {
     // 3. Fetch River Race
     const race = await getCurrentRiverRace(tag);
     if (!race || !race.clan) {
-       return NextResponse.json({ status: 'No active race data' });
+       return apiSuccess({ status: 'No active race data' });
     }
 
     // Preserve existing excuses from live snapshot
@@ -64,6 +62,7 @@ export async function GET(request: Request) {
     const currentBattleDay = isWarPeriod && dayOfWeek >= 3 ? (dayOfWeek - 3) + 1 : 0;
     const previousPeriod = liveWar ? liveWar.battleDay : -1;
     const previousSeason = liveWar ? liveWar.seasonId : -1;
+    
     // dayChanged = same season, both war days, day number actually changed
     const dayChanged = liveWar
       && previousSeason === race.sectionIndex
@@ -72,7 +71,6 @@ export async function GET(request: Request) {
       && previousPeriod !== currentBattleDay;
 
     if (dayChanged) {
-      // Day is over! Finalize the previous day's snapshot and save it
       console.log(`Day changed from ${previousPeriod} to ${currentBattleDay}. Finalizing day ${previousPeriod}.`);
       
       const finalSnapshot = {
@@ -80,7 +78,6 @@ export async function GET(request: Request) {
         timestamp: new Date().toISOString(),
         participants: liveWar.participants.map(p => ({
           ...p,
-          // excused stays excused; everyone else gets final verdict
           status: p.status === 'excused' ? 'excused' : p.decksUsedToday === 0 ? 'absent' : (p.decksUsedToday < 4 ? 'partial' : 'ok')
         }))
       } as any;
@@ -92,7 +89,7 @@ export async function GET(request: Request) {
     const newSnapshot = buildWarSnapshot(race, apiMembers, false, existingExcuses);
     await saveLiveWar(newSnapshot);
 
-    return NextResponse.json({ 
+    return apiSuccess({ 
       success: true, 
       dayChanged, 
       battleDay: newSnapshot.battleDay,
@@ -100,8 +97,7 @@ export async function GET(request: Request) {
       updatedAt: newSnapshot.timestamp
     });
 
-  } catch (error: any) {
-    console.error('Sync error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error);
   }
 }

@@ -1,29 +1,36 @@
-import { NextResponse } from 'next/server';
 import { getLiveWar, getJson } from '@/lib/db';
+import { verifyCronSecret, getAuthContext } from '@/lib/auth';
+import { apiSuccess, apiUnauthorized, apiError, handleApiError } from '@/lib/api-response';
+import { TELEGRAM_SETTINGS_KEY } from '@/lib/constants';
 
 export async function GET(request: Request) {
-  // Check authorization via secret query param or header
-  const authHeader = request.headers.get('authorization');
-  const url = new URL(request.url);
-  const secret = url.searchParams.get('secret');
+  // Check either valid cron secret or active Master Admin session
+  const isCronAuthorized = verifyCronSecret(request);
+  let isMasterAuthorized = false;
+  
+  if (!isCronAuthorized) {
+    const auth = await getAuthContext();
+    if (auth?.isMaster) {
+      isMasterAuthorized = true;
+    }
+  }
 
-  // Verify simple secret to prevent unauthorized abuse of the cron endpoint
-  if (secret !== process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!isCronAuthorized && !isMasterAuthorized) {
+    return apiUnauthorized('Richiesta non autorizzata: cron secret o sessione Master Admin richiesta');
   }
 
   try {
     const data = await getLiveWar();
     if (!data) {
-      return NextResponse.json({ error: 'No live war data available' }, { status: 400 });
+      return apiError('Nessun dato di guerra live disponibile', 400);
     }
 
-    const tgSettings = await getJson('cwt:settings:telegram') || {};
+    const tgSettings = (await getJson(TELEGRAM_SETTINGS_KEY)) || {};
     const token = tgSettings.token || process.env.TELEGRAM_BOT_TOKEN;
     const chatId = tgSettings.chatId || process.env.TELEGRAM_CHAT_ID;
 
     if (!token || !chatId) {
-      return NextResponse.json({ error: 'Telegram configuration is missing' }, { status: 500 });
+      return apiError('Configurazione Telegram mancante (Token o Chat ID non impostati)', 500);
     }
 
     const participants = data.participants || [];
@@ -76,11 +83,11 @@ export async function GET(request: Request) {
 
     if (!res.ok) {
       const tgError = await res.text();
-      return NextResponse.json({ error: 'Failed to send to Telegram', details: tgError }, { status: 500 });
+      return apiError('Errore durante l\'invio a Telegram', 500, tgError);
     }
 
-    return NextResponse.json({ success: true, message: 'Report sent to Telegram' });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return apiSuccess({ success: true, message: 'Report inviato su Telegram con successo' });
+  } catch (error) {
+    return handleApiError(error);
   }
 }
