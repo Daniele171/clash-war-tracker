@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { LineChart, Line, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface PlayerModalProps {
   tag: string;
@@ -11,6 +12,8 @@ export default function PlayerModal({ tag, onClose }: PlayerModalProps) {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [historyData, setHistoryData] = useState<any[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(true);
 
   useEffect(() => {
     // Lock body scroll
@@ -28,6 +31,29 @@ export default function PlayerModal({ tag, onClose }: PlayerModalProps) {
       })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
+
+    setHistoryLoading(true);
+    fetch('/api/history')
+      .then(r => r.json())
+      .then(hData => {
+         if (Array.isArray(hData)) {
+            // Sort by createdDate ascending or just reverse since RoyaleAPI usually returns newest first
+            const sortedWars = [...hData].reverse();
+            // Take only last 10 wars for the graph to not clutter it
+            const recentWars = sortedWars.slice(-10);
+            
+            const chartData = recentWars.map((war, i) => {
+               const participant = war.clan?.participants?.find((p: any) => p.tag === tag);
+               return {
+                 name: `War ${i+1}`,
+                 medals: participant ? participant.medals : 0
+               };
+            });
+            setHistoryData(chartData);
+         }
+      })
+      .catch(() => {})
+      .finally(() => setHistoryLoading(false));
   }, [tag]);
 
   return (
@@ -120,6 +146,33 @@ export default function PlayerModal({ tag, onClose }: PlayerModalProps) {
                   </div>
                 </div>
                 <div className="text-2xl">🎁</div>
+              </div>
+
+              {/* History Chart */}
+              <div className="mt-6 bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] rounded-xl p-4">
+                <div className="text-[10px] text-[#8888a8] uppercase tracking-wider mb-4">Andamento Medaglie (Ultime 10 War)</div>
+                {historyLoading ? (
+                  <div className="h-[120px] flex items-center justify-center">
+                    <div className="w-5 h-5 border-2 border-cr-gold border-t-transparent rounded-full animate-spin" />
+                  </div>
+                ) : historyData.length > 0 ? (
+                  <div className="h-[120px] w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={historyData}>
+                        <Tooltip 
+                          contentStyle={{ backgroundColor: 'rgba(12,12,28,0.9)', border: '1px solid rgba(240,192,48,0.3)', borderRadius: '8px', fontSize: '12px' }}
+                          itemStyle={{ color: '#f0c030', fontWeight: 'bold' }}
+                          labelStyle={{ color: '#8888a8', marginBottom: '4px' }}
+                        />
+                        <Line type="monotone" dataKey="medals" name="Medaglie" stroke="#f0c030" strokeWidth={3} dot={{ fill: '#f0c030', strokeWidth: 2, r: 4 }} activeDot={{ r: 6, fill: '#fff' }} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div className="h-[120px] flex items-center justify-center text-[12px] text-[#555575]">
+                    Nessun dato storico disponibile
+                  </div>
+                )}
               </div>
             </>
           )}

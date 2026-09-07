@@ -118,6 +118,39 @@ export default function WarTab() {
 
   const missingDecksPlayers = sorted.filter(p => p.status === 'absent' || p.status === 'partial');
 
+  const handleCopyReport = () => {
+    const absents = [...participants].filter((p: any) => p.status === 'absent').sort((a: any, b: any) => a.name.localeCompare(b.name));
+    const partials = [...participants].filter((p: any) => p.status === 'partial').sort((a: any, b: any) => a.name.localeCompare(b.name));
+
+    let report = '⚠️ *REPORT GUERRA FLUVIALE* ⚠️\n\n';
+    
+    if (absents.length > 0) {
+      report += '❌ *ASSENTI TOTALI (0/4 mazzi):*\n';
+      absents.forEach((p: any) => {
+        report += `- ${p.name}\n`;
+      });
+      report += '\n';
+    }
+
+    if (partials.length > 0) {
+      report += '⚠️ *PARZIALI (Non hanno finito):*\n';
+      partials.forEach((p: any) => {
+        report += `- ${p.name} (${p.decksUsedToday}/4 mazzi)\n`;
+      });
+      report += '\n';
+    }
+
+    if (absents.length === 0 && partials.length === 0) {
+      report += '✅ Tutti i membri hanno completato gli attacchi!\n';
+    } else {
+      report += '@everyone per favore fate gli attacchi! ⚔️\n';
+    }
+
+    navigator.clipboard.writeText(report);
+    // Creiamo un toast visivo invece del noioso alert di sistema se possibile, ma l'alert è un buon fallback rapido.
+    alert('Report copiato negli appunti! Pronto da incollare su WhatsApp/Telegram.');
+  };
+
   const handleExcuse = async (e: React.MouseEvent, tag: string, name: string, status: string) => {
     e.stopPropagation(); // prevent row click
     if (!isAdmin) return;
@@ -226,6 +259,15 @@ export default function WarTab() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+           {isAdmin && (
+             <button
+               onClick={handleCopyReport}
+               className="px-2.5 py-1 bg-[#0c0c1c] border border-[rgba(255,255,255,0.1)] hover:border-[#fb923c] text-[#8888a8] hover:text-[#fb923c] text-[11px] font-bold rounded flex items-center gap-1.5 transition-all mr-2"
+               title="Copia report assenti per WhatsApp"
+             >
+               📋 REPORT ASSENTI
+             </button>
+           )}
            <span className="text-[11px] text-[#8888a8]">Tap sulla riga per i profili</span>
            <span className="badge bg-[rgba(37,99,235,0.15)] border-[rgba(37,99,235,0.4)] text-[#60a5fa] shadow-[0_0_10px_rgba(37,99,235,0.2)] animate-pulse">🔥 LIVE</span>
         </div>
