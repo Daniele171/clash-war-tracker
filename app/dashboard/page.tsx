@@ -33,10 +33,17 @@ export default function WarTab() {
     return sortDirection === 'asc' ? <span className="text-cr-gold ml-1">▲</span> : <span className="text-cr-gold ml-1">▼</span>;
   };
 
+  const [perms, setPerms] = useState<any>(null);
+  const [isMaster, setIsMaster] = useState(false);
+
   useEffect(() => {
     fetch('/api/auth/me').then(r => r.json()).then(d => {
       if (d.username) setCurrentUsername(d.username.toLowerCase());
-      if (d.role === 'admin') setIsAdmin(true);
+      if (d.email === 'grazioso.daniele7@gmail.com') setIsMaster(true);
+      if (d.role === 'admin') {
+        setIsAdmin(true);
+        fetch('/api/permissions').then(r => r.json()).then(pd => setPerms(pd.permissions));
+      }
     }).catch(() => {});
 
     const fetchWars = () => {
@@ -165,9 +172,11 @@ export default function WarTab() {
     setTimeout(() => setReportCopied(false), 2000);
   };
 
+  const canExcuse = isMaster || (isAdmin && perms?.adminCanExcuse !== false);
+
   const handleExcuse = async (e: React.MouseEvent, tag: string, name: string, status: string) => {
     e.stopPropagation(); // prevent row click
-    if (!isAdmin) return;
+    if (!canExcuse) return;
     if (status === 'excused') {
       if (!confirm(`Rimuovere la giustificazione di ${name}?`)) return;
       try {
@@ -383,7 +392,7 @@ export default function WarTab() {
                         <div className="text-[10px] text-[#8888a8] mt-1 italic">📝 {p.excuseReason.substring(0, 20)}...</div>
                       )}
                     </td>
-                    {isAdmin && (
+                    {canExcuse && (
                       <td className="px-3 py-3.5">
                         <button
                           onClick={(e) => handleExcuse(e, p.tag, p.name, p.status)}

@@ -169,6 +169,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [showWelcome, setShowWelcome] = useState(false);
   const [showPatchNotes, setShowPatchNotes] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
+  const [perms, setPerms] = useState<any>(null);
   const autoSyncDone = useRef(false);
 
   const showToast = useCallback((message: string, type: 'success' | 'info' | 'error' = 'success') => {
@@ -215,6 +216,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         const info: UserInfo = { username: d.username, email: d.email || '', role: d.role || 'viewer' };
         setUserInfo(info);
 
+        if (d.role === 'admin') {
+          fetch('/api/permissions').then(r => r.json()).then(pd => setPerms(pd.permissions));
+        }
+
         // Welcome screen: once per session
         const sessionKey = `welcome_shown_${d.username}`;
         if (!sessionStorage.getItem(sessionKey)) {
@@ -232,6 +237,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [doAutoSync, checkPatchNotes]);
 
   const isAdmin = userInfo?.role === 'admin';
+  const isMaster = userInfo?.email === 'grazioso.daniele7@gmail.com';
+  const canForceSync = isMaster || (isAdmin && perms?.adminCanForceSync !== false);
 
   const handleSync = async () => {
     setIsSyncing(true);
@@ -298,7 +305,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {isAdmin && (
+            {canForceSync && (
               <button
                 onClick={handleSync}
                 disabled={isSyncing}

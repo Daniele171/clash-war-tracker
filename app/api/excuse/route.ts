@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { setExcuse, removeExcuse } from '@/lib/db';
+import { setExcuse, removeExcuse, getJson } from '@/lib/db';
 import { createClient } from '@/utils/supabase/server';
 
 export async function POST(request: Request) {
@@ -8,6 +8,12 @@ export async function POST(request: Request) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user || user.user_metadata?.role !== 'admin') {
       return NextResponse.json({ error: 'Solo gli admin possono giustificare' }, { status: 403 });
+    }
+
+    const isMaster = user.email === 'grazioso.daniele7@gmail.com';
+    const perms = (await getJson('cwt:settings:permissions')) || {};
+    if (!isMaster && perms.adminCanExcuse === false) {
+      return NextResponse.json({ error: 'Permesso negato dal Master Admin' }, { status: 403 })
     }
 
     const { tag, reason } = await request.json();
@@ -28,6 +34,12 @@ export async function DELETE(request: Request) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user || user.user_metadata?.role !== 'admin') {
       return NextResponse.json({ error: 'Solo gli admin possono gestire le giustificazioni' }, { status: 403 });
+    }
+
+    const isMaster = user.email === 'grazioso.daniele7@gmail.com';
+    const perms = (await getJson('cwt:settings:permissions')) || {};
+    if (!isMaster && perms.adminCanExcuse === false) {
+      return NextResponse.json({ error: 'Permesso negato dal Master Admin' }, { status: 403 })
     }
 
     const { tag } = await request.json();

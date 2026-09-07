@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/utils/supabase/admin'
 import { createClient } from '@/utils/supabase/server'
+import { getJson } from '@/lib/db'
 
 // Convert username to internal email format
 function usernameToEmail(username: string): string {
@@ -51,6 +52,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Non autorizzato' }, { status: 403 })
   }
 
+  const isMaster = user.email === 'grazioso.daniele7@gmail.com';
+  const perms = (await getJson('cwt:settings:permissions')) || {};
+  if (!isMaster && !perms.adminCanCreateUser) {
+    return NextResponse.json({ error: 'Permesso negato dal Master Admin' }, { status: 403 })
+  }
+
   try {
     const body = await request.json()
     const { password, role, email } = body
@@ -92,6 +99,12 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: 'Non autorizzato' }, { status: 403 })
   }
 
+  const isMaster = user.email === 'grazioso.daniele7@gmail.com';
+  const perms = (await getJson('cwt:settings:permissions')) || {};
+  if (!isMaster && !perms.adminCanDeleteUser) {
+    return NextResponse.json({ error: 'Permesso negato dal Master Admin' }, { status: 403 })
+  }
+
   try {
     const { id } = await request.json()
     if (id === user.id) {
@@ -123,6 +136,12 @@ export async function PATCH(request: Request) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user || user.user_metadata?.role !== 'admin') {
     return NextResponse.json({ error: 'Non autorizzato' }, { status: 403 })
+  }
+
+  const isMaster = user.email === 'grazioso.daniele7@gmail.com';
+  const perms = (await getJson('cwt:settings:permissions')) || {};
+  if (!isMaster && !perms.adminCanChangeRole) {
+    return NextResponse.json({ error: 'Permesso negato dal Master Admin' }, { status: 403 })
   }
 
   try {

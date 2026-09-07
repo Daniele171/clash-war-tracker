@@ -22,6 +22,31 @@ export default function SettingsTab() {
   const [createMsg, setCreateMsg] = useState('');
   const [creating, setCreating] = useState(false);
 
+  const [perms, setPerms] = useState<any>(null);
+  const [isMaster, setIsMaster] = useState(false);
+
+  const loadPerms = async () => {
+    try {
+      const res = await fetch('/api/permissions');
+      if (res.ok) {
+        const data = await res.json();
+        setPerms(data.permissions);
+        setIsMaster(data.isMaster);
+      }
+    } catch(e) {}
+  };
+
+  const handleTogglePerm = async (key: string) => {
+    if (!perms) return;
+    const newPerms = { ...perms, [key]: !perms[key] };
+    setPerms(newPerms);
+    await fetch('/api/permissions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newPerms)
+    });
+  };
+
   const [tgToken, setTgToken] = useState('');
   const [tgChatId, setTgChatId] = useState('');
   const [savingTg, setSavingTg] = useState(false);
@@ -75,6 +100,7 @@ export default function SettingsTab() {
       if (d.role === 'admin') {
         setIsAdmin(true);
         loadUsers();
+        loadPerms();
       } else {
         setLoadingUsers(false);
       }
@@ -153,9 +179,12 @@ export default function SettingsTab() {
             Gestione Utenti
           </div>
 
-          {currentUserEmail === 'grazioso.daniele7@gmail.com' && (
+          {(isMaster || perms?.adminCanCreateUser) && (
             <div className="card mb-5">
-              <div className="font-rajdhani text-[14px] font-bold text-[#f0f0ff] mb-1 flex items-center gap-2">Crea Nuovo Utente <span className="text-[10px] bg-cr-gold text-[#080815] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">Solo Master Admin</span></div>
+              <div className="font-rajdhani text-[14px] font-bold text-[#f0f0ff] mb-1 flex items-center gap-2">
+                Crea Nuovo Utente
+                {isMaster && <span className="text-[10px] bg-cr-gold text-[#080815] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">Master / Admin Autorizzati</span>}
+              </div>
             <p className="text-[11px] text-[#8888a8] mb-3">
               Lo username deve corrispondere al nome del giocatore nel clan. Al primo accesso l utente dovra cambiare la password.
             </p>
@@ -249,14 +278,16 @@ export default function SettingsTab() {
                     <div className="flex items-center gap-2">
                       {u.email !== 'grazioso.daniele7@gmail.com' ? (
                         <>
-                          <button
-                            onClick={() => handleChangeRole(u.id, u.username, u.role)}
-                            className="text-[11px] px-2.5 py-1 rounded border border-border-gold text-[#8888a8] hover:border-cr-gold hover:text-cr-gold transition-colors"
-                            title={u.role === 'admin' ? 'Declassa a Membro' : 'Promuovi ad Admin'}
-                          >
-                            {u.role === 'admin' ? '↓ Declassa' : '↑ Promuovi'}
-                          </button>
-                          {currentUserEmail === 'grazioso.daniele7@gmail.com' && (
+                          {(isMaster || perms?.adminCanChangeRole) && (
+                            <button
+                              onClick={() => handleChangeRole(u.id, u.username, u.role)}
+                              className="text-[11px] px-2.5 py-1 rounded border border-border-gold text-[#8888a8] hover:border-cr-gold hover:text-cr-gold transition-colors"
+                              title={u.role === 'admin' ? 'Declassa a Membro' : 'Promuovi ad Admin'}
+                            >
+                              {u.role === 'admin' ? '↓ Declassa' : '↑ Promuovi'}
+                            </button>
+                          )}
+                          {(isMaster || perms?.adminCanDeleteUser) && (
                             <button
                               onClick={() => handleDelete(u.id, u.username)}
                               className="text-[11px] px-2.5 py-1 rounded border border-border-gold text-[#8888a8] hover:border-red-500 hover:text-red-400 transition-colors"
@@ -278,7 +309,46 @@ export default function SettingsTab() {
             )}
           </div>
 
-          {currentUserEmail === 'grazioso.daniele7@gmail.com' && (
+          {isMaster && (
+            <>
+              <div className="font-rajdhani text-[17px] font-bold text-[#facc15] mb-3 mt-8 flex items-center gap-2">
+                🛡️ Centrale Operativa dei Permessi
+              </div>
+              <div className="card mb-6">
+                <p className="text-[11px] text-[#8888a8] mb-4">
+                  Decidi quali "super-poteri" concedere agli Admin. Se disattivi un'opzione, solo tu (il Master Admin) potrai eseguire quell'azione.
+                </p>
+                {perms ? (
+                  <div className="flex flex-col gap-3">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input type="checkbox" checked={perms.adminCanCreateUser} onChange={() => handleTogglePerm('adminCanCreateUser')} className="w-4 h-4 text-cr-gold rounded bg-[#0c0c1c] border-border-gold" />
+                      <span className="text-[13px] text-white">Permetti agli Admin di creare utenti</span>
+                    </label>
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input type="checkbox" checked={perms.adminCanDeleteUser} onChange={() => handleTogglePerm('adminCanDeleteUser')} className="w-4 h-4 text-cr-gold rounded bg-[#0c0c1c] border-border-gold" />
+                      <span className="text-[13px] text-white">Permetti agli Admin di eliminare utenti</span>
+                    </label>
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input type="checkbox" checked={perms.adminCanChangeRole} onChange={() => handleTogglePerm('adminCanChangeRole')} className="w-4 h-4 text-cr-gold rounded bg-[#0c0c1c] border-border-gold" />
+                      <span className="text-[13px] text-white">Permetti agli Admin di promuovere/declassare utenti</span>
+                    </label>
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input type="checkbox" checked={perms.adminCanExcuse} onChange={() => handleTogglePerm('adminCanExcuse')} className="w-4 h-4 text-cr-gold rounded bg-[#0c0c1c] border-border-gold" />
+                      <span className="text-[13px] text-white">Permetti agli Admin di giustificare le assenze</span>
+                    </label>
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input type="checkbox" checked={perms.adminCanForceSync} onChange={() => handleTogglePerm('adminCanForceSync')} className="w-4 h-4 text-cr-gold rounded bg-[#0c0c1c] border-border-gold" />
+                      <span className="text-[13px] text-white">Permetti agli Admin di forzare la sincronizzazione (Sincronizza Ora)</span>
+                    </label>
+                  </div>
+                ) : (
+                  <div className="text-[#8888a8] text-[13px]">Caricamento permessi...</div>
+                )}
+              </div>
+            </>
+          )}
+
+          {isMaster && (
             <>
               <div className="font-rajdhani text-[17px] font-bold text-[#14b8a6] mb-3 mt-8 flex items-center gap-2">
                 🤖 Configurazione Bot Telegram
