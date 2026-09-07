@@ -12,6 +12,7 @@ interface AppUser {
 
 export default function SettingsTab() {
   const [isAdmin, setIsAdmin] = useState(false);
+  const [currentUserEmail, setCurrentUserEmail] = useState('');
   const [users, setUsers] = useState<AppUser[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [newEmail, setNewEmail] = useState('');
@@ -31,6 +32,7 @@ export default function SettingsTab() {
 
   useEffect(() => {
     fetch('/api/auth/me').then(r => r.json()).then(d => {
+      if (d.email) setCurrentUserEmail(d.email);
       if (d.role === 'admin') {
         setIsAdmin(true);
         loadUsers();
@@ -112,8 +114,9 @@ export default function SettingsTab() {
             Gestione Utenti
           </div>
 
-          <div className="card mb-5">
-            <div className="font-rajdhani text-[14px] font-bold text-[#f0f0ff] mb-1">Crea Nuovo Utente</div>
+          {currentUserEmail === 'grazioso.daniele7@gmail.com' && (
+            <div className="card mb-5">
+              <div className="font-rajdhani text-[14px] font-bold text-[#f0f0ff] mb-1 flex items-center gap-2">Crea Nuovo Utente <span className="text-[10px] bg-cr-gold text-[#080815] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">Solo Master Admin</span></div>
             <p className="text-[11px] text-[#8888a8] mb-3">
               Lo username deve corrispondere al nome del giocatore nel clan. Al primo accesso l utente dovra cambiare la password.
             </p>
@@ -181,6 +184,7 @@ export default function SettingsTab() {
               )}
             </form>
           </div>
+          )}
 
           <div className="card mb-6">
             <div className="font-rajdhani text-[14px] font-bold text-[#f0f0ff] mb-3">Utenti Registrati</div>
@@ -213,13 +217,15 @@ export default function SettingsTab() {
                           >
                             {u.role === 'admin' ? '↓ Declassa' : '↑ Promuovi'}
                           </button>
-                          <button
-                            onClick={() => handleDelete(u.id, u.username)}
-                            className="text-[11px] px-2.5 py-1 rounded border border-border-gold text-[#8888a8] hover:border-red-500 hover:text-red-400 transition-colors"
-                            title="Elimina utente"
-                          >
-                            Elimina
-                          </button>
+                          {currentUserEmail === 'grazioso.daniele7@gmail.com' && (
+                            <button
+                              onClick={() => handleDelete(u.id, u.username)}
+                              className="text-[11px] px-2.5 py-1 rounded border border-border-gold text-[#8888a8] hover:border-red-500 hover:text-red-400 transition-colors"
+                              title="Elimina utente"
+                            >
+                              Elimina
+                            </button>
+                          )}
                         </>
                       ) : (
                         <span className="text-[10px] text-cr-gold font-bold px-2 py-1 bg-[rgba(240,192,48,0.1)] rounded border border-[rgba(240,192,48,0.3)]" title="Amministratore Assoluto intoccabile">

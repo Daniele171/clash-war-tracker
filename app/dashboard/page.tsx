@@ -11,6 +11,7 @@ export default function WarTab() {
   const [currentUsername, setCurrentUsername] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
   const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
+  const [reportCopied, setReportCopied] = useState(false);
 
   type SortField = 'default' | 'name' | 'medals' | 'decks' | 'week' | 'status';
   type SortDirection = 'asc' | 'desc';
@@ -38,16 +39,22 @@ export default function WarTab() {
       if (d.role === 'admin') setIsAdmin(true);
     }).catch(() => {});
 
-    fetch('/api/wars')
-      .then(r => r.json())
-      .then(d => {
-        setData(d);
-        setLoading(false);
-      })
-      .catch(e => {
-        setData({ error: e.message });
-        setLoading(false);
-      });
+    const fetchWars = () => {
+      fetch('/api/wars')
+        .then(r => r.json())
+        .then(d => {
+          setData(d);
+          setLoading(false);
+        })
+        .catch(e => {
+          setLoading(false);
+        });
+    };
+
+    fetchWars(); // Initial fetch
+
+    const interval = setInterval(fetchWars, 10000); // Poll every 10 seconds for real-time live sync
+    return () => clearInterval(interval);
   }, []);
 
   const isCurrentUser = (name: string) => {
@@ -121,34 +128,41 @@ export default function WarTab() {
   const handleCopyReport = () => {
     const absents = [...participants].filter((p: any) => p.status === 'absent').sort((a: any, b: any) => a.name.localeCompare(b.name));
     const partials = [...participants].filter((p: any) => p.status === 'partial').sort((a: any, b: any) => a.name.localeCompare(b.name));
+    const isTraining = data?.periodType === 'training';
 
-    let report = '⚠️ *REPORT GUERRA FLUVIALE* ⚠️\n\n';
+    let report = isTraining ? '🛡️ *REPORT ALLENAMENTO* 🛡️\n\n' : '⚠️ *REPORT GUERRA FLUVIALE* ⚠️\n\n';
     
-    if (absents.length > 0) {
-      report += '❌ *ASSENTI TOTALI (0/4 mazzi):*\n';
-      absents.forEach((p: any) => {
-        report += `- ${p.name}\n`;
-      });
-      report += '\n';
-    }
-
-    if (partials.length > 0) {
-      report += '⚠️ *PARZIALI (Non hanno finito):*\n';
-      partials.forEach((p: any) => {
-        report += `- ${p.name} (${p.decksUsedToday}/4 mazzi)\n`;
-      });
-      report += '\n';
-    }
-
-    if (absents.length === 0 && partials.length === 0) {
-      report += '✅ Tutti i membri hanno completato gli attacchi!\n';
+    if (isTraining) {
+      report += 'Oggi è giorno di allenamento! Preparate le difese della barca e testate i mazzi per i giorni di combattimento. ⚔️\n\n';
+      const participantsCount = participants.filter((p: any) => p.decksUsedToday > 0).length;
+      report += `✅ ${participantsCount} membri hanno già fatto almeno un attacco di prova.\n`;
     } else {
-      report += '@everyone per favore fate gli attacchi! ⚔️\n';
+      if (absents.length > 0) {
+        report += '❌ *ASSENTI TOTALI (0/4 mazzi):*\n';
+        absents.forEach((p: any) => {
+          report += `- ${p.name}\n`;
+        });
+        report += '\n';
+      }
+
+      if (partials.length > 0) {
+        report += '⚠️ *PARZIALI (Non hanno finito):*\n';
+        partials.forEach((p: any) => {
+          report += `- ${p.name} (${p.decksUsedToday}/4 mazzi)\n`;
+        });
+        report += '\n';
+      }
+
+      if (absents.length === 0 && partials.length === 0) {
+        report += '✅ Tutti i membri hanno completato gli attacchi! Grandissimi! 🏆\n';
+      } else {
+        report += '@everyone per favore fate gli attacchi! ⚔️\n';
+      }
     }
 
     navigator.clipboard.writeText(report);
-    // Creiamo un toast visivo invece del noioso alert di sistema se possibile, ma l'alert è un buon fallback rapido.
-    alert('Report copiato negli appunti! Pronto da incollare su WhatsApp/Telegram.');
+    setReportCopied(true);
+    setTimeout(() => setReportCopied(false), 2000);
   };
 
   const handleExcuse = async (e: React.MouseEvent, tag: string, name: string, status: string) => {
@@ -262,10 +276,10 @@ export default function WarTab() {
            {isAdmin && (
              <button
                onClick={handleCopyReport}
-               className="px-2.5 py-1 bg-[#0c0c1c] border border-[rgba(255,255,255,0.1)] hover:border-[#fb923c] text-[#8888a8] hover:text-[#fb923c] text-[11px] font-bold rounded flex items-center gap-1.5 transition-all mr-2"
+               className={`px-2.5 py-1 border text-[11px] font-bold rounded flex items-center gap-1.5 transition-all mr-2 ${reportCopied ? 'bg-[rgba(22,163,74,0.1)] border-[#4ade80] text-[#4ade80]' : 'bg-[#0c0c1c] border-[rgba(255,255,255,0.1)] hover:border-[#fb923c] text-[#8888a8] hover:text-[#fb923c]'}`}
                title="Copia report assenti per WhatsApp"
              >
-               📋 REPORT ASSENTI
+               {reportCopied ? '✅ COPIATO!' : '📋 REPORT ASSENTI'}
              </button>
            )}
            <span className="text-[11px] text-[#8888a8]">Tap sulla riga per i profili</span>
