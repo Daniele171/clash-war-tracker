@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getLiveWar } from '@/lib/db';
+import { getLiveWar, getJson } from '@/lib/db';
 
 export async function GET(request: Request) {
   // Check authorization via secret query param or header
@@ -18,8 +18,9 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'No live war data available' }, { status: 400 });
     }
 
-    const token = process.env.TELEGRAM_BOT_TOKEN;
-    const chatId = process.env.TELEGRAM_CHAT_ID;
+    const tgSettings = await getJson('cwt:settings:telegram') || {};
+    const token = tgSettings.token || process.env.TELEGRAM_BOT_TOKEN;
+    const chatId = tgSettings.chatId || process.env.TELEGRAM_CHAT_ID;
 
     if (!token || !chatId) {
       return NextResponse.json({ error: 'Telegram configuration is missing' }, { status: 500 });

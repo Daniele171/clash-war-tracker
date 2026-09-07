@@ -22,6 +22,40 @@ export default function SettingsTab() {
   const [createMsg, setCreateMsg] = useState('');
   const [creating, setCreating] = useState(false);
 
+  const [tgToken, setTgToken] = useState('');
+  const [tgChatId, setTgChatId] = useState('');
+  const [savingTg, setSavingTg] = useState(false);
+  const [tgMsg, setTgMsg] = useState('');
+
+  const loadTgSettings = async () => {
+    try {
+      const res = await fetch('/api/settings');
+      if (res.ok) {
+        const data = await res.json();
+        setTgToken(data.token || '');
+        setTgChatId(data.chatId || '');
+      }
+    } catch (e) {}
+  };
+
+  const handleSaveTg = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingTg(true);
+    setTgMsg('');
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: tgToken, chatId: tgChatId }),
+      });
+      if (res.ok) setTgMsg('OK: Salvato con successo');
+      else setTgMsg('Errore nel salvataggio');
+    } catch (e) {
+      setTgMsg('Errore');
+    }
+    setSavingTg(false);
+  };
+
   const loadUsers = () => {
     setLoadingUsers(true);
     fetch('/api/users').then(r => r.json()).then(d => {
@@ -32,7 +66,12 @@ export default function SettingsTab() {
 
   useEffect(() => {
     fetch('/api/auth/me').then(r => r.json()).then(d => {
-      if (d.email) setCurrentUserEmail(d.email);
+      if (d.email) {
+        setCurrentUserEmail(d.email);
+        if (d.email === 'grazioso.daniele7@gmail.com') {
+          loadTgSettings();
+        }
+      }
       if (d.role === 'admin') {
         setIsAdmin(true);
         loadUsers();
@@ -238,6 +277,55 @@ export default function SettingsTab() {
               </div>
             )}
           </div>
+
+          {currentUserEmail === 'grazioso.daniele7@gmail.com' && (
+            <>
+              <div className="font-rajdhani text-[17px] font-bold text-[#14b8a6] mb-3 mt-8 flex items-center gap-2">
+                🤖 Configurazione Bot Telegram
+              </div>
+              <div className="card mb-6">
+                <p className="text-[11px] text-[#8888a8] mb-4">
+                  Il bot invierà il report automatico ogni sera (se configurato su cron-job.org). Inserisci qui il token e l'ID della chat (può essere una tua chat privata o il gruppo del clan).
+                </p>
+                <form onSubmit={handleSaveTg} className="flex flex-col gap-3">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] text-[#8888a8] uppercase tracking-wider">Bot Token (da @BotFather)</label>
+                    <input
+                      type="text"
+                      value={tgToken}
+                      onChange={e => setTgToken(e.target.value)}
+                      placeholder="es. 123456789:ABCdefGHIjklmNOPqrsTUVwxyz"
+                      className="bg-[#0c0c1c] border border-border-gold rounded-lg px-3 py-2 text-[13px] text-white placeholder-[#555575] focus:outline-none focus:border-cr-gold transition-colors font-mono"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] text-[#8888a8] uppercase tracking-wider">Chat ID (Es. -1001234567 o tuo ID privato)</label>
+                    <input
+                      type="text"
+                      value={tgChatId}
+                      onChange={e => setTgChatId(e.target.value)}
+                      placeholder="es. -1002391039 o 91823912"
+                      className="bg-[#0c0c1c] border border-border-gold rounded-lg px-3 py-2 text-[13px] text-white placeholder-[#555575] focus:outline-none focus:border-cr-gold transition-colors font-mono"
+                    />
+                  </div>
+                  <div className="flex items-center gap-3 mt-2">
+                    <button
+                      type="submit"
+                      disabled={savingTg}
+                      className="bg-[#14b8a6] text-[#080815] font-rajdhani font-bold text-[13px] px-4 py-2 rounded-lg hover:bg-[#2dd4bf] transition-all disabled:opacity-50"
+                    >
+                      {savingTg ? 'Salvataggio...' : 'Salva Impostazioni Bot'}
+                    </button>
+                    {tgMsg && (
+                      <span className={`text-[12px] font-semibold ${tgMsg.startsWith('OK') ? 'text-green-400' : 'text-red-400'}`}>
+                        {tgMsg}
+                      </span>
+                    )}
+                  </div>
+                </form>
+              </div>
+            </>
+          )}
         </>
       )}
 
