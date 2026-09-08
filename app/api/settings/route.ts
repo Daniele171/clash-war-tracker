@@ -17,11 +17,14 @@ export async function POST(request: Request) {
   try {
     await requireMasterAdmin();
     const body = await request.json().catch(() => ({}));
-    const { token, chatId } = body;
+    const { token, chatId, enableDailyReport, enableHourlyWarning, customWarningMessage } = body;
 
     const tgSettings = { 
       token: typeof token === 'string' ? token.trim() : '', 
-      chatId: typeof chatId === 'string' ? chatId.trim() : '' 
+      chatId: typeof chatId === 'string' ? chatId.trim() : '',
+      enableDailyReport: typeof enableDailyReport === 'boolean' ? enableDailyReport : true,
+      enableHourlyWarning: typeof enableHourlyWarning === 'boolean' ? enableHourlyWarning : false,
+      customWarningMessage: typeof customWarningMessage === 'string' ? customWarningMessage.trim() : ''
     };
     await setJson(TELEGRAM_SETTINGS_KEY, tgSettings);
 

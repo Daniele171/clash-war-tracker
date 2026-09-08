@@ -52,6 +52,10 @@ export default function SettingsTab() {
   const [tgChatId, setTgChatId] = useState('');
   const [savingTg, setSavingTg] = useState(false);
   const [tgMsg, setTgMsg] = useState('');
+  const [enableDailyReport, setEnableDailyReport] = useState(true);
+  const [enableHourlyWarning, setEnableHourlyWarning] = useState(false);
+  const [customWarningMessage, setCustomWarningMessage] = useState('');
+  const [testingTg, setTestingTg] = useState(false);
 
   const loadTgSettings = async () => {
     try {
@@ -60,8 +64,29 @@ export default function SettingsTab() {
         const data = await res.json();
         setTgToken(data.token || '');
         setTgChatId(data.chatId || '');
+          if (data.enableDailyReport !== undefined) setEnableDailyReport(data.enableDailyReport);
+          if (data.enableHourlyWarning !== undefined) setEnableHourlyWarning(data.enableHourlyWarning);
+          setCustomWarningMessage(data.customWarningMessage || '');
       }
     } catch (e) {}
+  };
+
+  const handleTestTg = async () => {
+    setTestingTg(true);
+    setTgMsg('');
+    try {
+      const res = await fetch('/api/telegram-report?test=true');
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setTgMsg('OK: Messaggio di prova inviato!');
+      } else {
+        setTgMsg('ERR: ' + (data.error || 'Errore di test'));
+      }
+    } catch (err) {
+      setTgMsg('ERR: Errore di rete');
+    } finally {
+      setTestingTg(false);
+    }
   };
 
   const handleSaveTg = async (e: React.FormEvent) => {
@@ -72,7 +97,13 @@ export default function SettingsTab() {
       const res = await fetch('/api/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: tgToken, chatId: tgChatId }),
+        body: JSON.stringify({ 
+          token: tgToken, 
+          chatId: tgChatId,
+          enableDailyReport,
+          enableHourlyWarning,
+          customWarningMessage
+        }),
       });
       if (res.ok) setTgMsg('OK: Salvato con successo');
       else setTgMsg('Errore nel salvataggio');
@@ -379,13 +410,45 @@ export default function SettingsTab() {
                       className="bg-[#0c0c1c] border border-border-gold rounded-lg px-3 py-2 text-[13px] text-white placeholder-[#555575] focus:outline-none focus:border-cr-gold transition-colors font-mono"
                     />
                   </div>
+                  
+                  <div className="flex flex-col gap-3 mt-2 mb-2 p-3 bg-[#0c0c1c] border border-border-gold rounded-lg">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input type="checkbox" checked={enableDailyReport} onChange={() => setEnableDailyReport(!enableDailyReport)} className="w-4 h-4 text-cr-gold rounded bg-[#080815] border-[#333344]" />
+                      <span className="text-[13px] text-white">Abilita Report automatico a fine giornata</span>
+                    </label>
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input type="checkbox" checked={enableHourlyWarning} onChange={() => setEnableHourlyWarning(!enableHourlyWarning)} className="w-4 h-4 text-cr-gold rounded bg-[#080815] border-[#333344]" />
+                      <span className="text-[13px] text-white">Abilita Avviso 1 Ora Prima per i ritardatari (con tag @everyone)</span>
+                    </label>
+                    {enableHourlyWarning && (
+                      <div className="flex flex-col gap-1 mt-1">
+                        <label className="text-[10px] text-[#8888a8] uppercase tracking-wider">Messaggio Personalizzato Avviso (Opzionale)</label>
+                        <input
+                          type="text"
+                          value={customWarningMessage}
+                          onChange={e => setCustomWarningMessage(e.target.value)}
+                          placeholder="es. ⚠️ SVEGLIA! Manca solo 1 ora!"
+                          className="bg-[#080815] border border-[#333344] rounded-lg px-3 py-2 text-[13px] text-white placeholder-[#555575] focus:outline-none focus:border-cr-gold transition-colors"
+                        />
+                      </div>
+                    )}
+                  </div>
+
                   <div className="flex items-center gap-3 mt-2">
                     <button
                       type="submit"
                       disabled={savingTg}
                       className="bg-[#14b8a6] text-[#080815] font-rajdhani font-bold text-[13px] px-4 py-2 rounded-lg hover:bg-[#2dd4bf] transition-all disabled:opacity-50"
                     >
-                      {savingTg ? 'Salvataggio...' : 'Salva Impostazioni Bot'}
+                      {savingTg ? 'Salvataggio...' : 'Salva Impostazioni'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleTestTg}
+                      disabled={testingTg || !tgToken || !tgChatId}
+                      className="bg-[#0c0c1c] border border-[#14b8a6] text-[#14b8a6] font-rajdhani font-bold text-[13px] px-4 py-2 rounded-lg hover:bg-[rgba(20,184,166,0.1)] transition-all disabled:opacity-50"
+                    >
+                      {testingTg ? 'Invio test...' : 'Invia Messaggio di Prova'}
                     </button>
                     {tgMsg && (
                       <span className={`text-[12px] font-semibold ${tgMsg.startsWith('OK') ? 'text-green-400' : 'text-red-400'}`}>

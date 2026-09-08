@@ -4,7 +4,9 @@ import { apiSuccess, apiUnauthorized, apiError, handleApiError } from '@/lib/api
 import { TELEGRAM_SETTINGS_KEY } from '@/lib/constants';
 
 export async function GET(request: Request) {
-  // Check either valid cron secret or active Master Admin session
+  const { searchParams } = new URL(request.url);
+  const isTest = searchParams.get('test') === 'true';
+
   const isCronAuthorized = verifyCronSecret(request);
   let isMasterAuthorized = false;
   
@@ -20,17 +22,32 @@ export async function GET(request: Request) {
   }
 
   try {
-    const data = await getLiveWar();
-    if (!data) {
-      return apiError('Nessun dato di guerra live disponibile', 400);
-    }
-
     const tgSettings = (await getJson(TELEGRAM_SETTINGS_KEY)) || {};
     const token = tgSettings.token || process.env.TELEGRAM_BOT_TOKEN;
     const chatId = tgSettings.chatId || process.env.TELEGRAM_CHAT_ID;
 
     if (!token || !chatId) {
       return apiError('Configurazione Telegram mancante (Token o Chat ID non impostati)', 500);
+    }
+
+    if (isTest) {
+      const tgUrl = `https://api.telegram.org/bot${token}/sendMessage`;
+      const res = await fetch(tgUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: chatId, text: '👋 Ciao! Questo è un messaggio di test inviato dal pannello di amministrazione di Clash War Tracker. Il bot funziona correttamente! 🚀' })
+      });
+      if (!res.ok) return apiError('Errore durante l\'invio del test', 500, await res.text());
+      return apiSuccess({ success: true, message: 'Test inviato' });
+    }
+
+    if (tgSettings.enableDailyReport === false && isCronAuthorized) {
+       return apiSuccess({ success: true, message: 'Report automatico disabilitato nelle impostazioni' });
+    }
+
+    const data = await getLiveWar();
+    if (!data) {
+      return apiError('Nessun dato di guerra live disponibile', 400);
     }
 
     const participants = data.participants || [];
@@ -70,23 +87,18 @@ export async function GET(request: Request) {
 
     report += `\n🔍 Controlla i dettagli qui:\nhttps://clash-war-tracker-v3.vercel.app/`;
 
-    // Send to Telegram
     const tgUrl = `https://api.telegram.org/bot${token}/sendMessage`;
     const res = await fetch(tgUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: report,
-      })
+      body: JSON.stringify({ chat_id: chatId, text: report })
     });
 
     if (!res.ok) {
-      const tgError = await res.text();
-      return apiError('Errore durante l\'invio a Telegram', 500, tgError);
+      return apiError('Errore durante l\'invio a Telegram', 500, await res.text());
     }
 
-    return apiSuccess({ success: true, message: 'Report inviato su Telegram con successo' });
+    return apiSuccess({ success: true, message: 'Report inviato su Telegram' });
   } catch (error) {
     return handleApiError(error);
   }
