@@ -9,6 +9,10 @@ export interface AppPermissions {
   adminCanExcuse: boolean;
   adminCanForceSync: boolean;
   adminCanChangeRole: boolean;
+  adminCanConfigureBot: boolean;
+  adminCanClearCache: boolean;
+  adminCanSendManualAlerts: boolean;
+  adminCanManageGlobalSettings: boolean;
 }
 
 export const DEFAULT_PERMISSIONS: AppPermissions = {
@@ -17,6 +21,10 @@ export const DEFAULT_PERMISSIONS: AppPermissions = {
   adminCanExcuse: true,
   adminCanForceSync: true,
   adminCanChangeRole: false,
+  adminCanConfigureBot: false,
+  adminCanClearCache: false,
+  adminCanSendManualAlerts: false,
+  adminCanManageGlobalSettings: false,
 };
 
 export type PermissionKey = keyof AppPermissions;

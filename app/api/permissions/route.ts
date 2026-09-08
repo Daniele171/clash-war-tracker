@@ -26,6 +26,10 @@ export async function POST(request: Request) {
       adminCanExcuse: Boolean(body.adminCanExcuse),
       adminCanForceSync: Boolean(body.adminCanForceSync),
       adminCanChangeRole: Boolean(body.adminCanChangeRole),
+      adminCanConfigureBot: Boolean(body.adminCanConfigureBot),
+      adminCanClearCache: Boolean(body.adminCanClearCache),
+      adminCanSendManualAlerts: Boolean(body.adminCanSendManualAlerts),
+      adminCanManageGlobalSettings: Boolean(body.adminCanManageGlobalSettings),
     };
 
     await setJson(PERMISSIONS_KEY, sanitized);

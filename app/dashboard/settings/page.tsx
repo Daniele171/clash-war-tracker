@@ -369,6 +369,22 @@ export default function SettingsTab() {
                     {perms ? (
                       <div className="flex flex-col gap-2 mt-auto">
                         <label className="flex items-center gap-2 cursor-pointer">
+                          <input type="checkbox" checked={perms.adminCanConfigureBot} onChange={() => handleTogglePerm('adminCanConfigureBot')} className="w-3 h-3 text-cr-gold rounded bg-[#0c0c1c] border-border-gold" />
+                          <span className="text-[10px] text-[#b0b0c0]">Configurare il Bot Telegram</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input type="checkbox" checked={perms.adminCanSendManualAlerts} onChange={() => handleTogglePerm('adminCanSendManualAlerts')} className="w-3 h-3 text-cr-gold rounded bg-[#0c0c1c] border-border-gold" />
+                          <span className="text-[10px] text-[#b0b0c0]">Inviare Avvisi Manuali Telegram</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input type="checkbox" checked={perms.adminCanManageGlobalSettings} onChange={() => handleTogglePerm('adminCanManageGlobalSettings')} className="w-3 h-3 text-cr-gold rounded bg-[#0c0c1c] border-border-gold" />
+                          <span className="text-[10px] text-[#b0b0c0]">Gestire Impostazioni Globali</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input type="checkbox" checked={perms.adminCanClearCache} onChange={() => handleTogglePerm('adminCanClearCache')} className="w-3 h-3 text-red-500 rounded bg-[#0c0c1c] border-red-500" />
+                          <span className="text-[10px] text-red-400">Svuotare la Cache / Debug</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
                           <input type="checkbox" checked={perms.adminCanCreateUser} onChange={() => handleTogglePerm('adminCanCreateUser')} className="w-3 h-3 text-cr-gold rounded bg-[#0c0c1c] border-border-gold" />
                           <span className="text-[10px] text-[#b0b0c0]">Creare utenti</span>
                         </label>

@@ -12,14 +12,14 @@ interface UserInfo {
   isMaster?: boolean;
 }
 
-const APP_VERSION = 'v2.2';
+const APP_VERSION = 'v2.4';
 
 const PATCH_NOTES = [
+  { icon: '🦸', text: 'Nuovi Poteri Delegabili! Ora è possibile delegare lo Svuotamento Cache, la Gestione Impostazioni Globali e gli Avvisi Manuali.' },
   { icon: '🚀', text: 'Nuovo Pannello Bot Telegram e Automazione notifiche!' },
   { icon: '⚠️', text: 'Avviso "1 Ora Prima" per i ritardatari della guerra.' },
   { icon: '🛡️', text: 'Nuova Gerarchia dei Ruoli (Master, Admin, Viewer) più chiara e pulita.' },
-  { icon: '👁️', text: 'Dashboard ottimizzata: i Viewer non vedono più i tasti operativi e le impostazioni, per massima pulizia.' },
-  { icon: '🔐', text: 'Login e sicurezza API blindata al 100%.' }
+  { icon: '👁️', text: 'Dashboard ottimizzata: i Viewer non vedono più i tasti operativi.' }
 ];
 
 // --- Welcome Modal ---
