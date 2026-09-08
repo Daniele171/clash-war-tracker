@@ -12,15 +12,14 @@ interface UserInfo {
   isMaster?: boolean;
 }
 
-const APP_VERSION = 'v2.0';
+const APP_VERSION = 'v2.2';
 
 const PATCH_NOTES = [
-  { icon: '📊', text: 'Tabella Clan ordinabile per Nome, Ruolo e Anzianità' },
-  { icon: '📅', text: 'Data di ingresso membri tracciata automaticamente' },
-  { icon: '🔄', text: 'Sincronizzazione automatica all\'apertura della dashboard' },
-  { icon: '🔐', text: 'Login ora avviene solo tramite Email' },
-  { icon: '🐛', text: 'Risolto il crash della pagina Storico' },
-  { icon: '✨', text: 'Nuove animazioni e miglioramenti visivi' },
+  { icon: '🚀', text: 'Nuovo Pannello Bot Telegram e Automazione notifiche!' },
+  { icon: '⚠️', text: 'Avviso "1 Ora Prima" per i ritardatari della guerra.' },
+  { icon: '🛡️', text: 'Nuova Gerarchia dei Ruoli (Master, Admin, Viewer) più chiara e pulita.' },
+  { icon: '👁️', text: 'Dashboard ottimizzata: i Viewer non vedono più i tasti operativi e le impostazioni, per massima pulizia.' },
+  { icon: '🔐', text: 'Login e sicurezza API blindata al 100%.' }
 ];
 
 // --- Welcome Modal ---

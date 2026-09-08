@@ -268,6 +268,11 @@ export default function SettingsTab() {
                     <option value="viewer">Membro</option>
                     <option value="admin">Admin</option>
                   </select>
+                    <div className="mt-1 text-[10px] text-[#8888a8] italic">
+                      {newRole === 'viewer' 
+                        ? "👁️ Un Viewer potrà solo navigare la dashboard in sola lettura. Non vedrà impostazioni o tasti distruttivi." 
+                        : "🛡️ Un Admin avrà permessi speciali delegati da te nella Centrale Operativa."}
+                    </div>
                 </div>
                 <button
                   type="submit"
@@ -344,44 +349,59 @@ export default function SettingsTab() {
           {isMaster && (
             <>
               <div className="font-rajdhani text-[17px] font-bold text-[#facc15] mb-3 mt-8 flex items-center gap-2">
-                🛡️ Centrale Operativa dei Permessi
+                🛡️ Centrale Operativa: Gerarchia e Permessi
               </div>
               <div className="card mb-6">
                 <p className="text-[11px] text-[#8888a8] mb-4">
-                  Decidi quali "super-poteri" concedere agli Admin. Se disattivi un'opzione, solo tu (il Master Admin) potrai eseguire quell'azione.
+                  Questa sezione ti permette di capire chi ha accesso a cosa, e di configurare i poteri delegati agli Admin.
                 </p>
-                {perms ? (
-                  <div className="flex flex-col gap-3">
-                    <label className="flex items-center gap-3 cursor-pointer">
-                      <input type="checkbox" checked={perms.adminCanCreateUser} onChange={() => handleTogglePerm('adminCanCreateUser')} className="w-4 h-4 text-cr-gold rounded bg-[#0c0c1c] border-border-gold" />
-                      <span className="text-[13px] text-white">Permetti agli Admin di creare utenti</span>
-                    </label>
-                    <label className="flex items-center gap-3 cursor-pointer">
-                      <input type="checkbox" checked={perms.adminCanDeleteUser} onChange={() => handleTogglePerm('adminCanDeleteUser')} className="w-4 h-4 text-cr-gold rounded bg-[#0c0c1c] border-border-gold" />
-                      <span className="text-[13px] text-white">Permetti agli Admin di eliminare utenti</span>
-                    </label>
-                    <label className="flex items-center gap-3 cursor-pointer">
-                      <input type="checkbox" checked={perms.adminCanChangeRole} onChange={() => handleTogglePerm('adminCanChangeRole')} className="w-4 h-4 text-cr-gold rounded bg-[#0c0c1c] border-border-gold" />
-                      <span className="text-[13px] text-white">Permetti agli Admin di promuovere/declassare utenti</span>
-                    </label>
-                    <label className="flex items-center gap-3 cursor-pointer">
-                      <input type="checkbox" checked={perms.adminCanExcuse} onChange={() => handleTogglePerm('adminCanExcuse')} className="w-4 h-4 text-cr-gold rounded bg-[#0c0c1c] border-border-gold" />
-                      <span className="text-[13px] text-white">Permetti agli Admin di giustificare le assenze</span>
-                    </label>
-                    <label className="flex items-center gap-3 cursor-pointer">
-                      <input type="checkbox" checked={perms.adminCanForceSync} onChange={() => handleTogglePerm('adminCanForceSync')} className="w-4 h-4 text-cr-gold rounded bg-[#0c0c1c] border-border-gold" />
-                      <span className="text-[13px] text-white">Permetti agli Admin di forzare la sincronizzazione (Sincronizza Ora)</span>
-                    </label>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Colonna Master */}
+                  <div className="bg-[#080815] p-3 rounded-lg border border-[rgba(240,192,48,0.3)] flex flex-col gap-2">
+                    <div className="text-cr-gold font-rajdhani font-bold text-[14px]">👑 Master Admin</div>
+                    <div className="text-[11px] text-[#8888a8] leading-tight">Potere assoluto (Il tuo account).<br/>Nessuna restrizione. Può accedere alle impostazioni di sistema, configurare il bot e modificare i permessi globali.</div>
                   </div>
-                ) : (
-                  <div className="text-[#8888a8] text-[13px]">Caricamento permessi...</div>
-                )}
-              </div>
-            </>
-          )}
 
-          {isMaster && (
-            <>
+                  {/* Colonna Admin */}
+                  <div className="bg-[#080815] p-3 rounded-lg border border-[#333344] flex flex-col gap-2">
+                    <div className="text-[#f0f0ff] font-rajdhani font-bold text-[14px]">🛡️ Amministratori</div>
+                    <div className="text-[11px] text-[#8888a8] leading-tight mb-2">Hanno accesso parziale delegato. Decidi qui sotto cosa possono fare:</div>
+                    {perms ? (
+                      <div className="flex flex-col gap-2 mt-auto">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input type="checkbox" checked={perms.adminCanCreateUser} onChange={() => handleTogglePerm('adminCanCreateUser')} className="w-3 h-3 text-cr-gold rounded bg-[#0c0c1c] border-border-gold" />
+                          <span className="text-[10px] text-[#b0b0c0]">Creare utenti</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input type="checkbox" checked={perms.adminCanDeleteUser} onChange={() => handleTogglePerm('adminCanDeleteUser')} className="w-3 h-3 text-cr-gold rounded bg-[#0c0c1c] border-border-gold" />
+                          <span className="text-[10px] text-[#b0b0c0]">Eliminare utenti</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input type="checkbox" checked={perms.adminCanChangeRole} onChange={() => handleTogglePerm('adminCanChangeRole')} className="w-3 h-3 text-cr-gold rounded bg-[#0c0c1c] border-border-gold" />
+                          <span className="text-[10px] text-[#b0b0c0]">Cambiare ruolo</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input type="checkbox" checked={perms.adminCanExcuse} onChange={() => handleTogglePerm('adminCanExcuse')} className="w-3 h-3 text-cr-gold rounded bg-[#0c0c1c] border-border-gold" />
+                          <span className="text-[10px] text-[#b0b0c0]">Giustificare assenze</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input type="checkbox" checked={perms.adminCanForceSync} onChange={() => handleTogglePerm('adminCanForceSync')} className="w-3 h-3 text-cr-gold rounded bg-[#0c0c1c] border-border-gold" />
+                          <span className="text-[10px] text-[#b0b0c0]">Forzare Sync (Aggiorna)</span>
+                        </label>
+                      </div>
+                    ) : (
+                      <div className="text-[#8888a8] text-[10px]">Caricamento permessi...</div>
+                    )}
+                  </div>
+
+                  {/* Colonna Viewer */}
+                  <div className="bg-[#080815] p-3 rounded-lg border border-[rgba(20,184,166,0.2)] flex flex-col gap-2">
+                    <div className="text-[#14b8a6] font-rajdhani font-bold text-[14px]">👁️ Viewer (Membro)</div>
+                    <div className="text-[11px] text-[#8888a8] leading-tight">Account di sola lettura.<br/><br/>Possono visualizzare le statistiche, lo storico e i dati del clan. <b>Non hanno accesso</b> ai pulsanti operativi e non possono vedere questa pagina delle Impostazioni.</div>
+                  </div>
+                </div>
+              </div>
+
               <div className="font-rajdhani text-[17px] font-bold text-[#14b8a6] mb-3 mt-8 flex items-center gap-2">
                 🤖 Configurazione Bot Telegram
               </div>
