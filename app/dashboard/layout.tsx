@@ -12,14 +12,14 @@ interface UserInfo {
   isMaster?: boolean;
 }
 
-const APP_VERSION = 'v2.5';
+const APP_VERSION = 'v2.6';
 
 const PATCH_NOTES = [
+  { icon: '🌅', text: 'Nuovo Messaggio Bot: "Avviso Inizio Giornata". Il bot ora avvisa automaticamente se è il giorno di Allenamento o di Battaglia appena inizia la nuova giornata di guerra!' },
   { icon: '👁️', text: 'Giustificazioni Visibili: Tutti i membri ora possono leggere pubblicamente il motivo per cui un giocatore è stato giustificato!' },
   { icon: '⏱️', text: 'Auto-Logout e Sicurezza: Se non apri l\'app per più di 3 ore, verrai disconnesso automaticamente per proteggere l\'account.' },
   { icon: '🕵️', text: 'Activity Tracking (Admin): Gli amministratori ora possono vedere l\'orario di "Ultimo Accesso" esatto di ogni utente.' },
-  { icon: '🦸', text: 'Nuovi Poteri Delegabili! Svuotamento Cache, Gestione Impostazioni e Avvisi Manuali.' },
-  { icon: '🚀', text: 'Nuovo Pannello Bot Telegram e Automazione notifiche integrate.' }
+  { icon: '🦸', text: 'Nuovi Poteri Delegabili! Svuotamento Cache, Gestione Impostazioni e Avvisi Manuali.' }
 ];
 
 // --- Welcome Modal ---

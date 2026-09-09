@@ -7,6 +7,10 @@
     {
       "path": "/api/telegram-report",
       "schedule": "0 10 * * *"
+    },
+    {
+      "path": "/api/telegram-start",
+      "schedule": "1 10 * * *"
     }
   ]
 }

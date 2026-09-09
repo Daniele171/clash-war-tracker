@@ -17,14 +17,16 @@ export async function POST(request: Request) {
   try {
     await requirePermission('adminCanConfigureBot');
     const body = await request.json().catch(() => ({}));
-    const { token, chatId, enableDailyReport, enableHourlyWarning, customWarningMessage } = body;
+    const { token, chatId, enableDailyReport, enableHourlyWarning, customWarningMessage, enableStartMessage, customStartMessage } = body;
 
     const tgSettings = { 
       token: typeof token === 'string' ? token.trim() : '', 
       chatId: typeof chatId === 'string' ? chatId.trim() : '',
       enableDailyReport: typeof enableDailyReport === 'boolean' ? enableDailyReport : true,
       enableHourlyWarning: typeof enableHourlyWarning === 'boolean' ? enableHourlyWarning : false,
-      customWarningMessage: typeof customWarningMessage === 'string' ? customWarningMessage.trim() : ''
+      customWarningMessage: typeof customWarningMessage === 'string' ? customWarningMessage.trim() : '',
+      enableStartMessage: typeof enableStartMessage === 'boolean' ? enableStartMessage : false,
+      customStartMessage: typeof customStartMessage === 'string' ? customStartMessage.trim() : ''
     };
     await setJson(TELEGRAM_SETTINGS_KEY, tgSettings);
 

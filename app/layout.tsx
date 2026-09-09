@@ -14,10 +14,23 @@ const outfit = Outfit({
   variable: "--font-outfit",
 });
 
+export const viewport = {
+  themeColor: "#080815",
+};
+
 export const metadata: Metadata = {
   title: "War Tracker — Clan Clash Royale",
   description: "Traccia la partecipazione del tuo clan alle Clan War di Clash Royale.",
-};
+  manifest: "/manifest.json",
+  icons: {
+    icon: "/icon.png",
+    apple: "/icon.png",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "War Tracker",
+  }};
 
 export default function RootLayout({
   children,

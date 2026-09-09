@@ -58,6 +58,8 @@ export default function SettingsTab() {
   const [enableDailyReport, setEnableDailyReport] = useState(true);
   const [enableHourlyWarning, setEnableHourlyWarning] = useState(false);
   const [customWarningMessage, setCustomWarningMessage] = useState('');
+  const [enableStartMessage, setEnableStartMessage] = useState(false);
+  const [customStartMessage, setCustomStartMessage] = useState('');
   const [testingTg, setTestingTg] = useState(false);
 
   const loadTgSettings = async () => {
@@ -215,7 +217,7 @@ export default function SettingsTab() {
           </div>
 
           {(isMaster || perms?.adminCanCreateUser) && (
-            <div className="card mb-5">
+            <div className="glass-card rounded-2xl p-6 shadow-xl border border-border-gold/20 mb-5">
               <div className="font-rajdhani text-[14px] font-bold text-[#f0f0ff] mb-1 flex items-center gap-2">
                 Crea Nuovo Utente
                 {isMaster && <span className="text-[10px] bg-cr-gold text-[#080815] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">Master / Admin Autorizzati</span>}
@@ -294,7 +296,7 @@ export default function SettingsTab() {
           </div>
           )}
 
-          <div className="card mb-6">
+          <div className="glass-card rounded-2xl p-6 shadow-xl border border-border-gold/20 mb-6">
             <div className="font-rajdhani text-[14px] font-bold text-[#f0f0ff] mb-3">Utenti Registrati</div>
             {loadingUsers ? (
               <div className="text-[#8888a8] text-[13px]">Caricamento...</div>
@@ -354,7 +356,7 @@ export default function SettingsTab() {
               <div className="font-rajdhani text-[17px] font-bold text-[#facc15] mb-3 mt-8 flex items-center gap-2">
                 🛡️ Centrale Operativa: Gerarchia e Permessi
               </div>
-              <div className="card mb-6">
+              <div className="glass-card rounded-2xl p-6 shadow-xl border border-border-gold/20 mb-6">
                 <p className="text-[11px] text-[#8888a8] mb-4">
                   Questa sezione ti permette di capire chi ha accesso a cosa, e di configurare i poteri delegati agli Admin.
                 </p>
@@ -424,7 +426,7 @@ export default function SettingsTab() {
               <div className="font-rajdhani text-[17px] font-bold text-[#14b8a6] mb-3 mt-8 flex items-center gap-2">
                 🤖 Configurazione Bot Telegram
               </div>
-              <div className="card mb-6">
+              <div className="glass-card rounded-2xl p-6 shadow-xl border border-border-gold/20 mb-6">
                 <p className="text-[11px] text-[#8888a8] mb-4">
                   Il bot invierà il report automatico ogni sera (se configurato su cron-job.org). Inserisci qui il token e l'ID della chat (può essere una tua chat privata o il gruppo del clan).
                 </p>
@@ -503,7 +505,7 @@ export default function SettingsTab() {
       )}
 
       <div className="font-rajdhani text-[14px] font-bold text-[#8888a8] mb-2">Sistema</div>
-      <div className="card">
+      <div className="glass-card rounded-2xl p-6 shadow-xl border border-border-gold/20">
         <p className="text-[13px] text-[#8888a8] leading-relaxed">
           Dati salvati su <strong className="text-[#f0f0ff]">Supabase</strong> - Sync automatica ogni 15 min via cron-job.org<br/>
           Autenticazione gestita da <strong className="text-[#f0f0ff]">Supabase</strong>
