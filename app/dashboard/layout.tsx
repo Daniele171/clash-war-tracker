@@ -12,14 +12,14 @@ interface UserInfo {
   isMaster?: boolean;
 }
 
-const APP_VERSION = 'v2.4';
+const APP_VERSION = 'v2.5';
 
 const PATCH_NOTES = [
-  { icon: '🦸', text: 'Nuovi Poteri Delegabili! Ora è possibile delegare lo Svuotamento Cache, la Gestione Impostazioni Globali e gli Avvisi Manuali.' },
-  { icon: '🚀', text: 'Nuovo Pannello Bot Telegram e Automazione notifiche!' },
-  { icon: '⚠️', text: 'Avviso "1 Ora Prima" per i ritardatari della guerra.' },
-  { icon: '🛡️', text: 'Nuova Gerarchia dei Ruoli (Master, Admin, Viewer) più chiara e pulita.' },
-  { icon: '👁️', text: 'Dashboard ottimizzata: i Viewer non vedono più i tasti operativi.' }
+  { icon: '👁️', text: 'Giustificazioni Visibili: Tutti i membri ora possono leggere pubblicamente il motivo per cui un giocatore è stato giustificato!' },
+  { icon: '⏱️', text: 'Auto-Logout e Sicurezza: Se non apri l\'app per più di 3 ore, verrai disconnesso automaticamente per proteggere l\'account.' },
+  { icon: '🕵️', text: 'Activity Tracking (Admin): Gli amministratori ora possono vedere l\'orario di "Ultimo Accesso" esatto di ogni utente.' },
+  { icon: '🦸', text: 'Nuovi Poteri Delegabili! Svuotamento Cache, Gestione Impostazioni e Avvisi Manuali.' },
+  { icon: '🚀', text: 'Nuovo Pannello Bot Telegram e Automazione notifiche integrate.' }
 ];
 
 // --- Welcome Modal ---
@@ -210,6 +210,46 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     localStorage.setItem('patch_notes_seen', APP_VERSION);
     setShowPatchNotes(false);
   }, []);
+
+  useEffect(() => {
+    // Auto-logout (3 hours) e Activity Tracking
+    const THRESHOLD = 3 * 60 * 60 * 1000; // 3 ore
+    
+    const checkActivity = () => {
+      const lastActiveStr = localStorage.getItem('cwt:last_active_local');
+      const now = Date.now();
+      if (lastActiveStr) {
+        const lastActive = parseInt(lastActiveStr, 10);
+        if (now - lastActive > THRESHOLD) {
+          localStorage.removeItem('cwt:last_active_local');
+          // Perform signout
+          import('@/utils/supabase/client').then(({ createClient }) => {
+            const supabase = createClient();
+            supabase.auth.signOut().then(() => {
+              router.push('/login?timeout=1');
+            });
+          });
+          return true;
+        }
+      }
+      localStorage.setItem('cwt:last_active_local', now.toString());
+      return false;
+    };
+
+    if (checkActivity()) return;
+    
+    fetch('/api/activity', { method: 'POST' }).catch(() => {});
+    
+    const interval = setInterval(() => {
+      if (!checkActivity()) {
+        fetch('/api/activity', { method: 'POST' }).catch(() => {});
+      } else {
+        clearInterval(interval);
+      }
+    }, 1000 * 60 * 15);
+
+    return () => clearInterval(interval);
+  }, [router]);
 
   useEffect(() => {
     fetch('/api/auth/me').then(r => r.json()).then(d => {

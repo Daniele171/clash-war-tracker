@@ -2,6 +2,7 @@ import { requireAdmin, requirePermission } from '@/lib/auth';
 import { apiSuccess, apiError, handleApiError } from '@/lib/api-response';
 import { MASTER_ADMIN_EMAIL } from '@/lib/constants';
 import { createAdminClient } from '@/utils/supabase/admin';
+import { getJson } from '@/lib/db';
 
 function emailToUsername(email: string): string {
   if (email.endsWith('@clan.local')) {

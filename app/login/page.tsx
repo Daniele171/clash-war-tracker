@@ -76,6 +76,10 @@ function LoginForm() {
               {loading ? '◳ Accesso...' : 'Entra →'}
             </button>
           </form>
+          <div className="mt-4 text-center text-[12px] text-[#8888a8]">
+            Hai dimenticato la password o sei stato disconnesso per inattività?<br/>
+            <span className="text-[#facc15] cursor-pointer" onClick={() => alert('Contatta l\'amministratore (Daniele) su Telegram o WhatsApp per farti resettare la password.')}>Contatta l'amministratore</span> per il ripristino.
+          </div>
         </div>
       </div>
     </div>
