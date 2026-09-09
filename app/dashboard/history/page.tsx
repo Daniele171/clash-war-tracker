@@ -43,7 +43,7 @@ export default function HistoryTab() {
     <>
       {/* Current war notice */}
       {currentWar && (
-        <div className="bg-[#151525]/40 backdrop-blur-xl shadow-2xl border border-cr-gold/20 rounded-2xl p-6 shadow-xl border border-border-gold/20 mb-4 border-[rgba(37,99,235,0.4)] bg-[rgba(37,99,235,0.07)]">
+        <div className="bg-[#18181b]/50 backdrop-blur-xl shadow-lg border border-white/[0.05] rounded-2xl p-6 shadow-xl border border-border-gold/20 mb-4 border-[rgba(37,99,235,0.4)] bg-[rgba(37,99,235,0.07)]">
           <div className="flex items-center gap-2 text-[#60a5fa] font-semibold text-[13px]">
             <span className="text-[16px]">🔥</span>
             <span>

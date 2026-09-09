@@ -40,10 +40,10 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-[#080815] via-[#1a1a3a] to-[#2b0e40] animate-pulse relative overflow-hidden animate-fade-in">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-[#09090b] relative overflow-hidden animate-fade-in">
       {/* Toast Notification */}
       <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-500 ${showToast ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 -translate-y-10 scale-95 pointer-events-none'}`}>
-        <div className="bg-[#151525]/90 backdrop-blur-xl border border-cr-gold/50 shadow-[0_0_20px_rgba(240,192,48,0.2)] rounded-2xl px-6 py-4 flex items-center gap-3">
+        <div className="bg-[#18181b]/80 backdrop-blur-xl border border-white/[0.08] shadow-2xl rounded-2xl px-6 py-4 flex items-center gap-3">
           <div className="text-[20px]">👋</div>
           <div className="text-[13px] text-white">
             <span className="font-bold text-cr-gold">Contatta l'amministratore (Daniele)</span><br/>
@@ -53,8 +53,8 @@ function LoginForm() {
       </div>
 
       {/* Ambient background glows */}
-      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-cr-purple/40 rounded-full blur-[80px] mix-blend-screen pointer-events-none animate-pulse"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-cr-gold/40 rounded-full blur-[80px] mix-blend-screen pointer-events-none"></div>
+      
+      
 
       <div className="w-full max-w-[380px] z-10">
         <div className="text-center mb-8 animate-slide-up">
@@ -65,7 +65,7 @@ function LoginForm() {
           <p className="text-[14px] text-[#a0a0c0] mt-1 tracking-widest uppercase">Accesso Clan</p>
         </div>
 
-        <div className="bg-black/30 backdrop-blur-xl rounded-3xl p-8 shadow-[0_8px_40px_rgba(0,0,0,0.8)] border border-white/10 animate-slide-up-delayed">
+        <div className="bg-[#18181b]/50 backdrop-blur-2xl rounded-2xl p-8 shadow-2xl border border-white/[0.08] animate-slide-up-delayed">
           <form onSubmit={handleLogin} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
               <label className="text-[11px] font-rajdhani font-bold text-[#a0a0c0] uppercase tracking-wider pl-1">Email</label>

@@ -298,7 +298,7 @@ export default function WarTab() {
       </div>
 
       {/* Table */}
-      <div className="bg-[#151525]/40 backdrop-blur-xl shadow-2xl border border-cr-gold/20 rounded-2xl p-6 shadow-xl border border-border-gold/20 p-0 overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.5)]">
+      <div className="bg-[#18181b]/50 backdrop-blur-xl shadow-lg border border-white/[0.05] rounded-2xl p-6 shadow-xl border border-border-gold/20 p-0 overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.5)]">
         <div className="overflow-x-auto">
           <table className="w-full border-collapse min-w-[560px]">
             <thead>

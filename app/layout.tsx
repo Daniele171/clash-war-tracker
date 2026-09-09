@@ -41,16 +41,11 @@ export default function RootLayout({
     <html lang="it">
       <body className={`${rajdhani.variable} ${outfit.variable} font-outfit bg-[#080815] text-[#f0f0ff] min-h-screen overflow-x-hidden antialiased relative`}>
         {/* Background glow effects */}
-        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-[#05050f]">
-          {/* Enhanced bright ambient glows for glassmorphism */}
-          <div className="absolute top-[-20%] left-[-10%] w-[60vw] h-[60vw] bg-cr-purple/30 rounded-full blur-[120px] mix-blend-screen animate-pulse" style={{animationDuration: "8s"}}></div>
-          <div className="absolute bottom-[-20%] right-[-10%] w-[50vw] h-[50vw] bg-cr-gold/20 rounded-full blur-[100px] mix-blend-screen animate-pulse" style={{animationDuration: "12s", animationDelay: "2s"}}></div>
-          <div className="absolute top-[30%] left-[40%] w-[40vw] h-[40vw] bg-cr-blue/20 rounded-full blur-[120px] mix-blend-screen animate-pulse" style={{animationDuration: "10s", animationDelay: "4s"}}></div>
-          {/* Subtle grid pattern */}
+        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-[#09090b]">
+          {/* Professional micro-grid */}
           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03]"></div>
-          
-          
-          
+          {/* Very subtle glow at the top to give depth */}
+          <div className="absolute top-0 left-[20%] w-[60%] h-[200px] bg-white/[0.02] blur-[100px] pointer-events-none"></div>
         </div>
         
         <div className="relative z-10">
