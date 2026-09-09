@@ -53,8 +53,8 @@ function LoginForm() {
       </div>
 
       {/* Ambient background glows */}
-      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-cr-purple/20 rounded-full blur-[100px] pointer-events-none animate-pulse"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-cr-gold/10 rounded-full blur-[100px] pointer-events-none"></div>
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-cr-purple/40 rounded-full blur-[80px] mix-blend-screen pointer-events-none animate-pulse"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-cr-gold/40 rounded-full blur-[80px] mix-blend-screen pointer-events-none"></div>
 
       <div className="w-full max-w-[380px] z-10">
         <div className="text-center mb-8 animate-slide-up">
@@ -65,7 +65,7 @@ function LoginForm() {
           <p className="text-[14px] text-[#a0a0c0] mt-1 tracking-widest uppercase">Accesso Clan</p>
         </div>
 
-        <div className="bg-black/50 backdrop-blur-3xl rounded-3xl p-8 shadow-[0_8px_40px_rgba(0,0,0,0.8)] border border-white/10 animate-slide-up-delayed">
+        <div className="bg-black/30 backdrop-blur-xl rounded-3xl p-8 shadow-[0_8px_40px_rgba(0,0,0,0.8)] border border-white/10 animate-slide-up-delayed">
           <form onSubmit={handleLogin} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
               <label className="text-[11px] font-rajdhani font-bold text-[#a0a0c0] uppercase tracking-wider pl-1">Email</label>
