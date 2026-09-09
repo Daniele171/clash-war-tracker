@@ -40,7 +40,7 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-[#080815] via-[#101025] to-[#1a103c] bg-pan relative overflow-hidden animate-fade-in">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-[#080815] via-[#1a1a3a] to-[#2b0e40] animate-pulse relative overflow-hidden animate-fade-in">
       {/* Toast Notification */}
       <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-500 ${showToast ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 -translate-y-10 scale-95 pointer-events-none'}`}>
         <div className="bg-[#151525]/90 backdrop-blur-xl border border-cr-gold/50 shadow-[0_0_20px_rgba(240,192,48,0.2)] rounded-2xl px-6 py-4 flex items-center gap-3">
@@ -53,7 +53,7 @@ function LoginForm() {
       </div>
 
       {/* Ambient background glows */}
-      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-cr-purple/20 rounded-full blur-[100px] pointer-events-none animate-pulse-glow"></div>
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-cr-purple/20 rounded-full blur-[100px] pointer-events-none animate-pulse"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-cr-gold/10 rounded-full blur-[100px] pointer-events-none"></div>
 
       <div className="w-full max-w-[380px] z-10">
@@ -65,7 +65,7 @@ function LoginForm() {
           <p className="text-[14px] text-[#a0a0c0] mt-1 tracking-widest uppercase">Accesso Clan</p>
         </div>
 
-        <div className="glass-panel rounded-3xl p-8 shadow-[0_8px_40px_rgba(0,0,0,0.5)] animate-slide-up-delayed border-border-gold/30">
+        <div className="bg-black/50 backdrop-blur-3xl rounded-3xl p-8 shadow-[0_8px_40px_rgba(0,0,0,0.8)] border border-white/10 animate-slide-up-delayed">
           <form onSubmit={handleLogin} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
               <label className="text-[11px] font-rajdhani font-bold text-[#a0a0c0] uppercase tracking-wider pl-1">Email</label>
@@ -94,7 +94,7 @@ function LoginForm() {
             </div>
             {error && <div className="bg-[rgba(220,38,38,0.12)] border border-[rgba(220,38,38,0.4)] text-[#f87171] text-[13px] rounded-lg px-3.5 py-2.5 mt-1 animate-fade-in">❌ {error}</div>}
             
-            <button type="submit" disabled={loading} className="w-full flex justify-center py-3.5 px-4 rounded-xl shadow-[0_0_15px_rgba(250,204,21,0.2)] text-sm font-bold text-[#080815] bg-gradient-to-r from-[#facc15] to-[#eab308] hover:from-[#eab308] hover:to-[#ca8a04] focus:outline-none transition-all disabled:opacity-50 mt-6 active:scale-95 animate-pulse-glow hover:shadow-[0_0_25px_rgba(250,204,21,0.4)] font-rajdhani tracking-wider text-[16px]">
+            <button type="submit" disabled={loading} className="w-full flex justify-center py-3.5 px-4 rounded-xl shadow-[0_0_15px_rgba(250,204,21,0.2)] text-sm font-bold text-[#080815] bg-gradient-to-r from-[#facc15] to-[#eab308] hover:from-[#eab308] hover:to-[#ca8a04] focus:outline-none transition-all disabled:opacity-50 mt-6 active:scale-95 hover:shadow-[0_0_30px_rgba(250,204,21,0.6)] shadow-[0_0_15px_rgba(250,204,21,0.3)] animate-pulse font-rajdhani tracking-wider text-[16px]">
               {loading ? '◳ Accesso...' : 'Entra →'}
             </button>
           </form>
