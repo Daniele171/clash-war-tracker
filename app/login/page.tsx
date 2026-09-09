@@ -47,7 +47,7 @@ function LoginForm() {
           <div className="text-[20px]">👋</div>
           <div className="text-[13px] text-white">
             <span className="font-bold text-cr-gold">Contatta l'amministratore (Daniele)</span><br/>
-            su Telegram o WhatsApp per farti resettare la password.
+            su Telegram per farti resettare la password.
           </div>
         </div>
       </div>
