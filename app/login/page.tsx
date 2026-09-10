@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Suspense } from 'react';
 import { createClient } from '@/utils/supabase/client';
+import InstallPrompt from '@/components/InstallPrompt';
 
 function LoginForm() {
   const router = useRouter();
@@ -65,6 +66,7 @@ function LoginForm() {
           <p className="text-[14px] text-[#a0a0c0] mt-1 tracking-widest uppercase">Accesso Clan</p>
         </div>
 
+        <InstallPrompt />
         <div className="bg-[#18181b]/50 backdrop-blur-2xl rounded-2xl p-8 shadow-2xl border border-white/[0.08] animate-slide-up-delayed">
           <form onSubmit={handleLogin} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
