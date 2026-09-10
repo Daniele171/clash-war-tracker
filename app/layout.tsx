@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Rajdhani, Outfit } from "next/font/google";
 import "./globals.css";
+import PwaRegistry from "@/components/PwaRegistry";
 
 const rajdhani = Rajdhani({ 
   subsets: ["latin"], 

@@ -2,7 +2,7 @@
   "name": "Clash War Tracker",
   "short_name": "War Tracker",
   "description": "App per la gestione della Guerra tra Clan di Clash Royale",
-  "start_url": "/login",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#080815",
   "theme_color": "#080815",
@@ -17,5 +17,11 @@
       "sizes": "512x512",
       "type": "image/png"
     }
+  ],
+  "scope": "/",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "minimal-ui"
   ]
 }
