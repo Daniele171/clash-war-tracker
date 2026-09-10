@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Rajdhani, Outfit } from "next/font/google";
 import "./globals.css";
 
@@ -14,8 +14,13 @@ const outfit = Outfit({
   variable: "--font-outfit",
 });
 
-export const viewport = {
+export const viewport: Viewport = {
   themeColor: "#080815",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
 };
 
 export const metadata: Metadata = {
