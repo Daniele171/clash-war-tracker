@@ -106,19 +106,23 @@ export default function InstallPrompt() {
               <button onClick={() => setShowAndroidInAppPrompt(false)} className="text-[#8888a8] hover:text-white text-lg">✕</button>
             </div>
             <div className="flex flex-col gap-4 text-[13px] text-[#c8c8e0]">
-              <p>Il download automatico è bloccato (potresti essere dentro WhatsApp o avere una vecchia icona salvata).</p>
-              <p className="text-cr-gold font-bold">Per installare l'App correttamente:</p>
+              <p>Il tuo browser blocca i download automatici. Potresti aver aperto il sito da <strong>Samsung Internet</strong> o dall'<strong>App Google</strong>.</p>
+              <p className="text-cr-gold font-bold">Come forzare l'installazione:</p>
               <div className="flex items-start gap-3 bg-black/40 p-3 rounded-xl border border-white/5">
                 <span className="text-xl mt-0.5">1️⃣</span>
-                <span>Se sei su WhatsApp/Telegram: clicca i <strong>3 puntini in alto a destra ⠇</strong> e fai <strong>"Apri nel browser"</strong>.</span>
+                <span>Se sei su <strong>Samsung Internet</strong>: premi le tre lineette in basso a destra ☰ e fai <strong>"Aggiungi a schermata Home"</strong>.</span>
               </div>
               <div className="flex items-start gap-3 bg-black/40 p-3 rounded-xl border border-white/5">
                 <span className="text-xl mt-0.5">2️⃣</span>
-                <span>Se sei GIÀ su Chrome: clicca i <strong>3 puntini in alto a destra ⠇</strong> e seleziona <strong>"Installa app"</strong>.</span>
+                <span>Se sei sull'<strong>App Google o WhatsApp</strong>: premi i 3 puntini in alto a destra ⠇ e fai <strong>"Apri in Chrome"</strong>. Poi segui il passaggio 3.</span>
+              </div>
+              <div className="flex items-start gap-3 bg-black/40 p-3 rounded-xl border border-white/5">
+                <span className="text-xl mt-0.5">3️⃣</span>
+                <span>Se sei su <strong>Chrome</strong>: premi i 3 puntini in alto a destra ⠇ e seleziona <strong>"Installa app"</strong>.</span>
               </div>
               <div className="flex items-start gap-3 bg-red-900/20 p-3 rounded-xl border border-red-500/30">
                 <span className="text-xl mt-0.5">⚠️</span>
-                <span className="text-red-200">Se non vedi "Installa app" significa che hai ancora la vecchia icona sulla Home del telefono! <strong>Cancellala</strong> e ricarica la pagina.</span>
+                <span className="text-red-200">Se sei su Chrome ma non vedi "Installa app" significa che non hai cancellato le icone vecchie. <strong>Cancellale dalla Home</strong>!</span>
               </div>
             </div>
             <button onClick={() => setShowAndroidInAppPrompt(false)} className="w-full mt-6 bg-white/10 text-white font-bold py-3.5 rounded-xl hover:bg-white/20 transition-all border border-white/5">
