@@ -110,7 +110,7 @@ export default function InstallPrompt() {
               <p className="text-cr-gold font-bold">Come forzare l'installazione:</p>
               <div className="flex items-start gap-3 bg-black/40 p-3 rounded-xl border border-white/5">
                 <span className="text-xl mt-0.5">1️⃣</span>
-                <span>Se sei su <strong>Samsung Internet</strong>: premi le tre lineette in basso a destra ☰ e fai <strong>"Aggiungi a schermata Home"</strong>.</span>
+                <span>Se sei su <strong>Samsung Internet</strong>: premi le tre lineette in basso a destra ☰ e fai <strong>"Installa"</strong> (o "Aggiungi a schermata Home").</span>
               </div>
               <div className="flex items-start gap-3 bg-black/40 p-3 rounded-xl border border-white/5">
                 <span className="text-xl mt-0.5">2️⃣</span>
