@@ -102,26 +102,26 @@ export default function InstallPrompt() {
         <div className="fixed inset-0 z-[300] flex items-end justify-center p-4" style={{ background: 'rgba(8,8,21,0.85)', backdropFilter: 'blur(8px)' }} onClick={() => setShowAndroidInAppPrompt(false)}>
           <div className="bg-[#18181b] w-full max-w-[400px] rounded-t-3xl p-6 border-t border-white/10 pb-10 shadow-2xl animate-[slideUp_0.4s_cubic-bezier(0.34,1.3,0.64,1)_both]" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-xl font-rajdhani text-white">Apri su Chrome</h3>
+              <h3 className="font-bold text-xl font-rajdhani text-white">Installazione Manuale</h3>
               <button onClick={() => setShowAndroidInAppPrompt(false)} className="text-[#8888a8] hover:text-white text-lg">✕</button>
             </div>
-            <div className="flex flex-col gap-4 text-[14px] text-[#c8c8e0]">
-              <p>Sembra che tu abbia aperto questo link direttamente da un'app (come WhatsApp o Telegram).</p>
-              <p className="text-cr-gold font-bold">Per poter installare l'App devi aprire il sito sul browser normale:</p>
-              <div className="flex items-center gap-3 bg-black/40 p-4 rounded-xl border border-white/5">
-                <span className="text-2xl">1️⃣</span>
-                <span>Tocca i <strong>tre puntini verticali</strong> in alto a destra ⠇</span>
+            <div className="flex flex-col gap-4 text-[13px] text-[#c8c8e0]">
+              <p>Il download automatico è bloccato (potresti essere dentro WhatsApp o avere una vecchia icona salvata).</p>
+              <p className="text-cr-gold font-bold">Per installare l'App correttamente:</p>
+              <div className="flex items-start gap-3 bg-black/40 p-3 rounded-xl border border-white/5">
+                <span className="text-xl mt-0.5">1️⃣</span>
+                <span>Se sei su WhatsApp/Telegram: clicca i <strong>3 puntini in alto a destra ⠇</strong> e fai <strong>"Apri nel browser"</strong>.</span>
               </div>
-              <div className="flex items-center gap-3 bg-black/40 p-4 rounded-xl border border-white/5">
-                <span className="text-2xl">2️⃣</span>
-                <span>Seleziona <strong>"Apri nel browser"</strong> (o "Apri in Chrome").</span>
+              <div className="flex items-start gap-3 bg-black/40 p-3 rounded-xl border border-white/5">
+                <span className="text-xl mt-0.5">2️⃣</span>
+                <span>Se sei GIÀ su Chrome: clicca i <strong>3 puntini in alto a destra ⠇</strong> e seleziona <strong>"Installa app"</strong>.</span>
               </div>
-              <div className="flex items-center gap-3 bg-black/40 p-4 rounded-xl border border-white/5">
-                <span className="text-2xl">3️⃣</span>
-                <span>Una volta in Chrome, vedrai spuntare il popup automatico per l'installazione!</span>
+              <div className="flex items-start gap-3 bg-red-900/20 p-3 rounded-xl border border-red-500/30">
+                <span className="text-xl mt-0.5">⚠️</span>
+                <span className="text-red-200">Se non vedi "Installa app" significa che hai ancora la vecchia icona sulla Home del telefono! <strong>Cancellala</strong> e ricarica la pagina.</span>
               </div>
             </div>
-            <button onClick={() => setShowAndroidInAppPrompt(false)} className="w-full mt-6 bg-white/10 text-white font-bold py-3.5 rounded-xl hover:bg-white/20 transition-all">
+            <button onClick={() => setShowAndroidInAppPrompt(false)} className="w-full mt-6 bg-white/10 text-white font-bold py-3.5 rounded-xl hover:bg-white/20 transition-all border border-white/5">
               Ho capito
             </button>
           </div>
