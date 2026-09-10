@@ -51,7 +51,9 @@ export async function GET(request: Request) {
     }
 
     const participants = data.participants || [];
-    const absents = [...participants].filter((p: any) => p.status === 'absent').sort((a: any, b: any) => a.name.localeCompare(b.name));
+    const pendings = [...participants].filter((p: any) => p.status === 'pending');
+    const absents = [...participants].filter((p: any) => p.status === 'absent');
+    const missing = [...absents, ...pendings].sort((a: any, b: any) => a.name.localeCompare(b.name));
     const partials = [...participants].filter((p: any) => p.status === 'partial').sort((a: any, b: any) => a.name.localeCompare(b.name));
     const isTraining = data.periodType === 'training';
 
@@ -62,9 +64,9 @@ export async function GET(request: Request) {
       const participantsCount = participants.filter((p: any) => p.decksUsedToday > 0).length;
       report += `✅ ${participantsCount} membri hanno già fatto almeno un attacco di prova.\n`;
     } else {
-      if (absents.length > 0) {
-        report += '❌ *ASSENTI TOTALI (0/4 mazzi):*\n';
-        absents.forEach((p: any) => {
+      if (missing.length > 0) {
+        report += '❌ *ANCORA DA GIOCARE (0/4 mazzi):*\n';
+        missing.forEach((p: any) => {
           report += `- ${p.name}\n`;
         });
         report += '\n';
@@ -78,10 +80,15 @@ export async function GET(request: Request) {
         report += '\n';
       }
 
-      if (absents.length === 0 && partials.length === 0) {
+      if (missing.length === 0 && partials.length === 0) {
         report += '✅ Tutti i membri hanno completato gli attacchi! Grandissimi! 🏆\n';
       } else {
-        report += '@everyone per favore fate gli attacchi! ⚔️\n';
+        // Se mancano 40+ persone è probabile che la giornata sia appena resettata
+        if (missing.length > 35) {
+          report += 'La nuova giornata di guerra è appena iniziata! Buona fortuna a tutti! ⚔️\n';
+        } else {
+          report += '@everyone per favore fate gli attacchi! ⚔️\n';
+        }
       }
     }
 
