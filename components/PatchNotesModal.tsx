@@ -1,8 +1,10 @@
 'use client';
 
-export const APP_VERSION = 'v2.6';
+export const APP_VERSION = 'v3.0';
 
 const PATCH_NOTES = [
+  { icon: '📱', text: 'Nuova App Nativa (PWA): Ora puoi scaricare il sito come una vera App su Android e iPhone per un\'esperienza a schermo intero!' },
+  { icon: '✨', text: 'Nuova Veste Grafica: Design "serio" e pulito. Addio neon e grafiche eccessive, benvenuta fluidità professionale.' },
   { icon: '🌅', text: 'Nuovo Messaggio Bot: "Avviso Inizio Giornata". Il bot ora avvisa automaticamente se è il giorno di Allenamento o di Battaglia appena inizia la nuova giornata di guerra!' }
 ];
 
