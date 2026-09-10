@@ -5,18 +5,20 @@ import { useState, useEffect } from 'react';
 export default function InstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isIOS, setIsIOS] = useState(false);
+  const [isAndroid, setIsAndroid] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
   const [showIOSPrompt, setShowIOSPrompt] = useState(false);
+  const [showAndroidInAppPrompt, setShowAndroidInAppPrompt] = useState(false);
 
   useEffect(() => {
     // Check if already installed
     const isStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
     setIsStandalone(isStandaloneMode);
 
-    // Detect iOS
+    // Detect OS
     const userAgent = window.navigator.userAgent.toLowerCase();
-    const isIOSDevice = /iphone|ipad|ipod/.test(userAgent);
-    setIsIOS(isIOSDevice);
+    setIsIOS(/iphone|ipad|ipod/.test(userAgent));
+    setIsAndroid(/android/.test(userAgent));
 
     // Listen for Chrome install prompt
     const handleBeforeInstallPrompt = (e: any) => {
@@ -32,16 +34,21 @@ export default function InstallPrompt() {
   }, []);
 
   if (isStandalone) return null; // Don't show if already installed
-  if (!deferredPrompt && !isIOS) return null; // Don't show on desktop/unsupported
+  if (!isIOS && !isAndroid) return null; // Don't show on desktop
 
   const handleInstallClick = async () => {
     if (isIOS) {
       setShowIOSPrompt(true);
-    } else if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') {
-        setDeferredPrompt(null);
+    } else if (isAndroid) {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          setDeferredPrompt(null);
+        }
+      } else {
+        // Android but no prompt available (likely in-app browser like Telegram/WhatsApp)
+        setShowAndroidInAppPrompt(true);
       }
     }
   };
@@ -73,17 +80,48 @@ export default function InstallPrompt() {
               <button onClick={() => setShowIOSPrompt(false)} className="text-[#8888a8] hover:text-white text-lg">✕</button>
             </div>
             <div className="flex flex-col gap-4 text-[14px] text-[#c8c8e0]">
-              <p>Per installare l'App nativa su iPhone (niente barra del browser!), segui questi due semplici passaggi:</p>
+              <p>Per installare l'App nativa su iPhone, segui questi passaggi:</p>
               <div className="flex items-center gap-3 bg-black/40 p-4 rounded-xl border border-white/5">
                 <span className="text-2xl">1️⃣</span>
-                <span>Tocca l'icona <strong>Condividi</strong> in basso al centro sul tuo schermo (il quadratino con la freccia in alto).</span>
+                <span>Tocca l'icona <strong>Condividi</strong> in basso al centro (quadratino con freccia).</span>
               </div>
               <div className="flex items-center gap-3 bg-black/40 p-4 rounded-xl border border-white/5">
                 <span className="text-2xl">2️⃣</span>
                 <span>Scorri verso il basso e tocca <strong>"Aggiungi alla schermata Home"</strong> ⊞.</span>
               </div>
             </div>
-            <button onClick={() => setShowIOSPrompt(false)} className="w-full mt-6 bg-white/10 text-white font-bold py-3.5 rounded-xl hover:bg-white/20 transition-all border border-white/5">
+            <button onClick={() => setShowIOSPrompt(false)} className="w-full mt-6 bg-white/10 text-white font-bold py-3.5 rounded-xl hover:bg-white/20 transition-all">
+              Ho capito
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Android In-App Browser Warning Modal */}
+      {showAndroidInAppPrompt && (
+        <div className="fixed inset-0 z-[300] flex items-end justify-center p-4" style={{ background: 'rgba(8,8,21,0.85)', backdropFilter: 'blur(8px)' }} onClick={() => setShowAndroidInAppPrompt(false)}>
+          <div className="bg-[#18181b] w-full max-w-[400px] rounded-t-3xl p-6 border-t border-white/10 pb-10 shadow-2xl animate-[slideUp_0.4s_cubic-bezier(0.34,1.3,0.64,1)_both]" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-bold text-xl font-rajdhani text-white">Apri su Chrome</h3>
+              <button onClick={() => setShowAndroidInAppPrompt(false)} className="text-[#8888a8] hover:text-white text-lg">✕</button>
+            </div>
+            <div className="flex flex-col gap-4 text-[14px] text-[#c8c8e0]">
+              <p>Sembra che tu abbia aperto questo link direttamente da un'app (come WhatsApp o Telegram).</p>
+              <p className="text-cr-gold font-bold">Per poter installare l'App devi aprire il sito sul browser normale:</p>
+              <div className="flex items-center gap-3 bg-black/40 p-4 rounded-xl border border-white/5">
+                <span className="text-2xl">1️⃣</span>
+                <span>Tocca i <strong>tre puntini verticali</strong> in alto a destra ⠇</span>
+              </div>
+              <div className="flex items-center gap-3 bg-black/40 p-4 rounded-xl border border-white/5">
+                <span className="text-2xl">2️⃣</span>
+                <span>Seleziona <strong>"Apri nel browser"</strong> (o "Apri in Chrome").</span>
+              </div>
+              <div className="flex items-center gap-3 bg-black/40 p-4 rounded-xl border border-white/5">
+                <span className="text-2xl">3️⃣</span>
+                <span>Una volta in Chrome, vedrai spuntare il popup automatico per l'installazione!</span>
+              </div>
+            </div>
+            <button onClick={() => setShowAndroidInAppPrompt(false)} className="w-full mt-6 bg-white/10 text-white font-bold py-3.5 rounded-xl hover:bg-white/20 transition-all">
               Ho capito
             </button>
           </div>
