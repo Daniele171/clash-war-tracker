@@ -175,20 +175,25 @@ export default function WarTab() {
 
   const canExcuse = isMaster || (isAdmin && perms?.adminCanExcuse !== false);
 
-  const handleExcuse = async (e: React.MouseEvent, tag: string, name: string, status: string) => {
+  const handleExcuse = async (e: React.MouseEvent, p: any) => {
     e.stopPropagation(); // prevent row click
     if (!canExcuse) return;
-    if (status === 'excused') {
-      if (!confirm(`Rimuovere la giustificazione di ${name}?`)) return;
+    if (p.status === 'excused') {
+      if (!confirm(`Rimuovere la giustificazione di ${p.name}?`)) return;
       try {
-        await fetch('/api/excuse', { method: 'DELETE', body: JSON.stringify({ tag }) });
+        await fetch('/api/excuse', { method: 'DELETE', body: JSON.stringify({ tag: p.tag }) });
         window.location.reload();
       } catch {}
     } else {
-      const reason = prompt(`Giustifica ${name} per OGGI:`);
+      let warning = '';
+      if (p.totalExcusedDays > 0) {
+        const lastDate = p.lastExcusedDate ? new Date(p.lastExcusedDate).toLocaleDateString('it-IT') : 'sconosciuta';
+        warning = `\n\n⚠️ ATTENZIONE: Questo giocatore è già stato scusato ${p.totalExcusedDays} volte in passato! (Ultima volta: ${lastDate})`;
+      }
+      const reason = prompt(`Giustifica ${p.name} per OGGI:${warning}`);
       if (reason === null) return;
       try {
-        await fetch('/api/excuse', { method: 'POST', body: JSON.stringify({ tag, reason: reason || 'Giustificato' }) });
+        await fetch('/api/excuse', { method: 'POST', body: JSON.stringify({ tag: p.tag, reason: reason || 'Giustificato' }) });
         window.location.reload();
       } catch {}
     }
@@ -396,7 +401,7 @@ export default function WarTab() {
                     {canExcuse && (
                       <td className="px-3 py-3.5">
                         <button
-                          onClick={(e) => handleExcuse(e, p.tag, p.name, p.status)}
+                          onClick={(e) => handleExcuse(e, p)}
                           className="btn btn-ghost border-transparent hover:border-border-gold-strong btn-sm px-2.5 py-1 text-[12px] bg-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.1)] transition-all"
                           title={p.status === 'excused' ? 'Rimuovi giustificazione' : 'Giustifica per oggi'}
                         >

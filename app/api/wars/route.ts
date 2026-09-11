@@ -1,4 +1,4 @@
-import { getLiveWar, getSeasonSnapshots } from '@/lib/db';
+import { getLiveWar, getSeasonSnapshots, getClanStats } from '@/lib/db';
 import { requireAuth } from '@/lib/auth';
 import { apiSuccess, handleApiError } from '@/lib/api-response';
 
@@ -35,10 +35,15 @@ export async function GET() {
       });
     });
 
+    // Get historical stats for excuses
+    const stats = await getClanStats();
+
     // Inject breakdown directly into each participant
     const enrichedParticipants = liveWar.participants.map(p => ({
       ...p,
-      missedDaysBreakdown: missedDecksByTag[p.tag] || []
+      missedDaysBreakdown: missedDecksByTag[p.tag] || [],
+      totalExcusedDays: stats[p.tag]?.totalExcusedDays || 0,
+      lastExcusedDate: stats[p.tag]?.lastExcusedDate || null
     }));
 
     return apiSuccess({ ...liveWar, participants: enrichedParticipants });

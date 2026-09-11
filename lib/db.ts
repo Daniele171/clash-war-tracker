@@ -16,6 +16,8 @@ export interface ClanMemberStats {
   totalDecksExpected: number;
   missedAttacks: number;
   perfectDays: number;
+  totalExcusedDays?: number;
+  lastExcusedDate?: string;
 }
 
 export interface WarSnapshot {

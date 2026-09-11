@@ -99,6 +99,10 @@ export async function GET(request: Request) {
           if (p.decksUsedToday >= 4) {
             stats[p.tag].perfectDays += 1;
           }
+          if (p.status === 'excused') {
+            stats[p.tag].totalExcusedDays = (stats[p.tag].totalExcusedDays || 0) + 1;
+            stats[p.tag].lastExcusedDate = new Date().toISOString();
+          }
         });
         await saveClanStats(stats);
       } catch (e) {
