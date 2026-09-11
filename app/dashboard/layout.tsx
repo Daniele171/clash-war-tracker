@@ -176,7 +176,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const navItems = [
     { path: '/dashboard', label: 'Guerra', icon: '⚔️' },
+    { path: '/dashboard/radar', label: 'Radar', icon: '⛵' },
     { path: '/dashboard/history', label: 'Storico', icon: '📅' },
+    { path: '/dashboard/leaderboard', label: 'Mazzi & Top', icon: '🏆' },
     { path: '/dashboard/clan', label: 'Clan', icon: '👥' },
     ...(isAdmin ? [{ path: '/dashboard/settings', label: 'Config', icon: '⚙️' }] : []),
   ];

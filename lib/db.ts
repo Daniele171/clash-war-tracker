@@ -8,12 +8,29 @@ export interface ClanMember {
   joinedDate?: string;
 }
 
+export interface ClanMemberStats {
+  tag: string;
+  name: string;
+  totalWars: number;
+  totalDecksUsed: number;
+  totalDecksExpected: number;
+  missedAttacks: number;
+  perfectDays: number;
+}
+
 export interface WarSnapshot {
   seasonId: number;
   sectionIndex: number;
   battleDay: number;
   periodType: 'training' | 'combat' | 'colosseum';
   timestamp: string;
+  clans?: {
+    tag: string;
+    name: string;
+    badgeId: number;
+    fame: number;
+    periodPoints: number;
+  }[];
   participants: {
     tag: string;
     name: string;
@@ -39,6 +56,7 @@ const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
 });
 
 const KEYS = {
+  WAR_STATS: 'cwt:war:stats',
   MEMBERS: 'cwt:members',
   WAR_SNAP: (seasonId: number, day: number) => `cwt:war:${seasonId}:day:${day}`,
   WAR_LIVE: 'cwt:war:live',
@@ -84,6 +102,14 @@ export async function setJson(key: string, value: any) {
 }
 
 // --- Members ---
+export async function getClanStats(): Promise<Record<string, ClanMemberStats>> {
+  return (await getJson(KEYS.WAR_STATS)) || {};
+}
+
+export async function saveClanStats(stats: Record<string, ClanMemberStats>) {
+  await setJson(KEYS.WAR_STATS, stats);
+}
+
 export async function getMembers(): Promise<ClanMember[]> {
   return (await getJson(KEYS.MEMBERS)) || [];
 }

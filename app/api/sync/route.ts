@@ -1,5 +1,5 @@
 import { getCurrentRiverRace, getClanMembers } from '@/lib/cr-api';
-import { getLiveWar, saveLiveWar, saveWarSnapshot, getMembers, saveMembers } from '@/lib/db';
+import { getLiveWar, saveLiveWar, saveWarSnapshot, getMembers, saveMembers, getClanStats, saveClanStats } from '@/lib/db';
 import { buildWarSnapshot } from '@/lib/war-utils';
 import { verifyCronSecret } from '@/lib/auth';
 import { apiSuccess, apiUnauthorized, apiError, handleApiError } from '@/lib/api-response';
@@ -63,15 +63,12 @@ export async function GET(request: Request) {
     const previousPeriod = liveWar ? liveWar.battleDay : -1;
     const previousSeason = liveWar ? liveWar.seasonId : -1;
     
-    // dayChanged = same season, both war days, day number actually changed
-    const dayChanged = liveWar
-      && previousSeason === race.sectionIndex
-      && previousPeriod > 0
-      && currentBattleDay > 0
-      && previousPeriod !== currentBattleDay;
+    const seasonChanged = liveWar && previousSeason !== race.sectionIndex;
+    const dayChanged = liveWar && previousSeason === race.sectionIndex && previousPeriod > 0 && currentBattleDay > 0 && previousPeriod !== currentBattleDay;
+    const isClosingDay = (dayChanged || seasonChanged) && previousPeriod > 0;
 
-    if (dayChanged) {
-      console.log(`Day changed from ${previousPeriod} to ${currentBattleDay}. Finalizing day ${previousPeriod}.`);
+    if (isClosingDay) {
+      console.log(`Closing day ${previousPeriod} (Season ${previousSeason}).`);
       
       const finalSnapshot = {
         ...liveWar,
@@ -83,6 +80,30 @@ export async function GET(request: Request) {
       } as any;
       
       await saveWarSnapshot(liveWar.seasonId, liveWar.battleDay, finalSnapshot);
+
+      // Aggiornamento Statistiche Storiche (Wall of Fame)
+      try {
+        const stats = await getClanStats();
+        finalSnapshot.participants.forEach((p: any) => {
+          if (!stats[p.tag]) {
+            stats[p.tag] = { tag: p.tag, name: p.name, totalWars: 0, totalDecksUsed: 0, totalDecksExpected: 0, missedAttacks: 0, perfectDays: 0 };
+          }
+          // Non contare gli attacchi mancati se è stato scusato
+          const expected = p.status === 'excused' ? p.decksUsedToday : 4;
+          const missed = Math.max(0, expected - p.decksUsedToday);
+          
+          stats[p.tag].totalWars += 1;
+          stats[p.tag].totalDecksUsed += p.decksUsedToday;
+          stats[p.tag].totalDecksExpected += expected;
+          stats[p.tag].missedAttacks += missed;
+          if (p.decksUsedToday >= 4) {
+            stats[p.tag].perfectDays += 1;
+          }
+        });
+        await saveClanStats(stats);
+      } catch (e) {
+        console.error('Failed to update clan stats', e);
+      }
     }
 
     // 5. Build and save new live snapshot
@@ -91,7 +112,7 @@ export async function GET(request: Request) {
 
     return apiSuccess({ 
       success: true, 
-      dayChanged, 
+      dayChanged: isClosingDay, 
       battleDay: newSnapshot.battleDay,
       periodType: newSnapshot.periodType,
       updatedAt: newSnapshot.timestamp

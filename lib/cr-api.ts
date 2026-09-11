@@ -53,3 +53,8 @@ export async function getRiverRaceLog(tag: string) {
   const formattedTag = encodeURIComponent(formatTag(tag));
   return fetchCR(`/clans/${formattedTag}/riverracelog?limit=20`, true);
 }
+
+export async function getPlayerBattleLog(tag: string) {
+  const formattedTag = encodeURIComponent(formatTag(tag));
+  return fetchCR(`/players/${formattedTag}/battlelog`, true);
+}

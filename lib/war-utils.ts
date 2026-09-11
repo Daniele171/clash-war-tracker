@@ -17,6 +17,7 @@ export interface CRRiverRace {
   periodType: 'training' | 'combat' | 'colosseum';
   sectionIndex: number;
   periodIndex: number;
+  clans?: any[];
   clan: {
     tag: string;
     name: string;
@@ -47,12 +48,24 @@ export function buildWarSnapshot(race: CRRiverRace, allMembers: any[], isDayClos
   // Assuming 0,1,2 = training, 3,4,5,6 = combat (battleDay 1,2,3,4)
   const battleDay = isWarDay ? (dayOfWeek - 3) + 1 : 0;
   
+  let clansData: any[] = [];
+  if (race.clans && Array.isArray(race.clans)) {
+    clansData = race.clans.map((c: any) => ({
+      tag: c.tag,
+      name: c.name,
+      badgeId: c.badgeId,
+      fame: c.fame,
+      periodPoints: c.periodPoints
+    }));
+  }
+
   return {
     seasonId: race.sectionIndex, // using sectionIndex as season ID proxy
     sectionIndex: race.sectionIndex,
     battleDay: battleDay > 0 ? battleDay : 0,
     periodType: race.periodType,
     timestamp: new Date().toISOString(),
+    clans: clansData,
     participants: allMembers.map((member: any) => {
       const p = (race.clan.participants || []).find((rp: any) => rp.tag === member.tag);
       const decksUsedToday = p ? p.decksUsedToday : 0;
