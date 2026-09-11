@@ -62,6 +62,51 @@ export default function SettingsTab() {
   const [customStartMessage, setCustomStartMessage] = useState('');
   const [testingTg, setTestingTg] = useState(false);
 
+  // Global Settings
+  const [globalSettings, setGlobalSettings] = useState({
+    showLiveBanner: true,
+    sortByDecksToday: false,
+    hideZeroMedalsTraining: false,
+    missedDecksWarningThreshold: 4,
+    hoursBeforeEndForWarning: 2,
+    compactMode: false,
+  });
+  const [savingGlobal, setSavingGlobal] = useState(false);
+  const [globalMsg, setGlobalMsg] = useState('');
+
+  const loadGlobalSettings = async () => {
+    try {
+      const res = await fetch('/api/settings/global');
+      if (res.ok) {
+        const data = await res.json();
+        setGlobalSettings(data);
+      }
+    } catch (e) {}
+  };
+
+  const handleSaveGlobal = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingGlobal(true);
+    setGlobalMsg('');
+    try {
+      const res = await fetch('/api/settings/global', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(globalSettings)
+      });
+      if (res.ok) {
+        setGlobalMsg('OK: Impostazioni globali salvate!');
+        setTimeout(() => window.location.reload(), 1000);
+      } else {
+        setGlobalMsg('ERR: Errore nel salvataggio');
+      }
+    } catch (err) {
+      setGlobalMsg('ERR: Errore di rete');
+    } finally {
+      setSavingGlobal(false);
+    }
+  };
+
   const loadTgSettings = async () => {
     try {
       const res = await fetch('/api/settings');

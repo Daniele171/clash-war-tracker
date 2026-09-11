@@ -29,3 +29,23 @@ export const DEFAULT_PERMISSIONS: AppPermissions = {
 
 export type PermissionKey = keyof AppPermissions;
 export type UserRole = 'admin' | 'member' | 'viewer';
+
+export const GLOBAL_SETTINGS_KEY = 'cwt:settings:global';
+
+export interface GlobalSettings {
+  showLiveBanner: boolean;
+  sortByDecksToday: boolean;
+  hideZeroMedalsTraining: boolean;
+  missedDecksWarningThreshold: number;
+  hoursBeforeEndForWarning: number;
+  compactMode: boolean;
+}
+
+export const DEFAULT_GLOBAL_SETTINGS: GlobalSettings = {
+  showLiveBanner: true,
+  sortByDecksToday: false,
+  hideZeroMedalsTraining: false,
+  missedDecksWarningThreshold: 4,
+  hoursBeforeEndForWarning: 2,
+  compactMode: false,
+};

@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 @theme {
+  /* ─── Colors ─── */
   --color-bg-0: #080815;
   --color-bg-1: #0f0f20;
   --color-bg-2: #1a1a30;
@@ -18,37 +19,86 @@
   --color-border-gold: rgba(240,192,48,0.18);
   --color-border-gold-strong: rgba(240,192,48,0.5);
 
+  /* ─── Fonts ─── */
   --font-rajdhani: var(--font-rajdhani), sans-serif;
   --font-outfit: var(--font-outfit), sans-serif;
-  
+
+  /* ─── Shadows ─── */
   --shadow-glow-gold: 0 0 24px rgba(240,192,48,0.22);
-  
-  /* Animations for v4 */
-  --animate-slide-up: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  --animate-slide-up-delayed: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
-  --animate-row-enter: rowEnter 0.4s ease-out forwards;
-  
+
+  /* ─── Animations ─── */
+  --animate-fadeIn: fadeIn 0.4s ease forwards;
+  --animate-slideUp: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-slideDown: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-bounceIn: bounceIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  --animate-shimmer: shimmer 1.6s infinite;
+  --animate-float: float 3s ease-in-out infinite;
+  --animate-dangerPulse: dangerPulse 2s ease-in-out infinite;
+  --animate-rowEnter: rowEnter 0.35s ease-out forwards;
+  --animate-barFill: barFill 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-shake: shake 0.5s ease-in-out;
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
   @keyframes slideUp {
-    from { opacity: 0; transform: translateY(30px); }
+    from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
   }
-  
-  @keyframes rowEnter {
-    from { opacity: 0; transform: translateY(15px); }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-12px); }
     to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes bounceIn {
+    from { opacity: 0; transform: scale(0.7); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes shimmer {
+    0%   { background-position: -400px 0; }
+    100% { background-position: 400px 0; }
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+
+  @keyframes dangerPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(220,38,38,0); }
+    50% { box-shadow: 0 0 0 4px rgba(220,38,38,0.2); }
+  }
+
+  @keyframes rowEnter {
+    from { opacity: 0; transform: translateX(-8px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  @keyframes barFill {
+    from { width: 0%; }
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%       { transform: translateX(-4px); }
+    40%       { transform: translateX(4px); }
+    60%       { transform: translateX(-3px); }
+    80%       { transform: translateX(3px); }
   }
 }
 
+/* ─── Reusable Components ─── */
 @layer components {
   .btn {
     @apply px-4 py-2 rounded-md border font-outfit text-[13px] font-semibold cursor-pointer transition-all duration-200 inline-flex items-center gap-1.5 whitespace-nowrap;
   }
-  .btn:hover {
-    @apply -translate-y-[1px];
-  }
-  .btn:active {
-    @apply translate-y-0;
-  }
+  .btn:hover { @apply -translate-y-[1px]; }
+  .btn:active { @apply translate-y-0; }
+
   .btn-gold {
     @apply bg-gradient-to-br from-cr-yellow to-cr-gold border-cr-gold text-[#1a0a00] font-bold shadow-[0_4px_14px_rgba(240,192,48,0.3)] hover:shadow-[0_6px_22px_rgba(240,192,48,0.5)];
   }
@@ -69,24 +119,37 @@
     content: '';
     @apply absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[rgba(240,192,48,0.4)] to-transparent;
   }
-  
+
   .badge {
     @apply inline-flex items-center gap-1 px-2 py-[3px] rounded-full text-[11px] font-semibold whitespace-nowrap border;
   }
+
+  /* Skeleton loading shimmer */
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      rgba(255,255,255,0.04) 25%,
+      rgba(240,192,48,0.08) 50%,
+      rgba(255,255,255,0.04) 75%
+    );
+    background-size: 400px 100%;
+    animation: shimmer 1.6s infinite;
+    border-radius: 6px;
+  }
+
+  /* Row with danger state */
+  .row-danger {
+    animation: dangerPulse 2s ease-in-out infinite;
+  }
 }
 
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.2);
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(240, 192, 48, 0.5);
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(240,192,48,0.5); }
+
+/* ─── PWA Safe Area ─── */
+body {
+  padding-bottom: env(safe-area-inset-bottom);
 }

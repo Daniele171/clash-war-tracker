@@ -360,7 +360,7 @@ export default function WarTab() {
                   <tr
                     key={p.tag}
                     onClick={() => setSelectedPlayer(p.tag)}
-                    className={`row-animate border-b border-[rgba(255,255,255,0.03)] transition-all cursor-pointer group
+                    className={`animate-rowEnter border-b border-[rgba(255,255,255,0.03)] transition-all cursor-pointer group
                       ${isMe
                         ? 'bg-[rgba(240,192,48,0.08)] hover:bg-[rgba(240,192,48,0.12)] shadow-[inset_0_0_0_1px_rgba(240,192,48,0.3)]'
                         : isBad
@@ -373,7 +373,7 @@ export default function WarTab() {
                     <td className="px-3 py-3.5">
                       <div className="flex items-center gap-2">
                         {isMe && (
-                          <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-cr-gold text-[#080815] font-bold uppercase tracking-wider animate-[pulse_2s_ease-in-out_infinite] shadow-[0_0_8px_rgba(240,192,48,0.6)]">
+                          <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-cr-gold text-[#080815] font-bold uppercase tracking-wider animate-dangerPulse shadow-[0_0_8px_rgba(240,192,48,0.6)]">
                             Tu
                           </span>
                         )}

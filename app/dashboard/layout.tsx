@@ -222,7 +222,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 className="bg-bg-card border border-border-gold rounded-lg text-white w-10 h-10 flex items-center justify-center hover:border-cr-gold hover:bg-[rgba(240,192,48,0.22)] hover:scale-105 transition-all disabled:opacity-50"
                 title="Sincronizza da API CR"
               >
-                <span className={isSyncing ? 'animate-spin inline-block' : 'inline-block'}>🔄</span>
+                <span className={isSyncing ? 'animate-spin inline-block' : 'inline-block hover:animate-bounceIn'}>🔄</span>
               </button>
             )}
             <button
@@ -237,7 +237,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </header>
 
       {/* Bottom Nav */}
-      <nav className="fixed bottom-0 left-0 right-0 h-[56px] bg-[#0a0a16]/97 backdrop-blur-md border-t border-border-gold z-40 flex justify-center shadow-[0_-2px_20px_rgba(0,0,0,0.5)]">
+      <nav className="fixed bottom-0 left-0 right-0 h-[calc(56px+env(safe-area-inset-bottom))] pb-[env(safe-area-inset-bottom)] bg-[#0a0a16]/97 backdrop-blur-md border-t border-border-gold z-40 flex justify-center shadow-[0_-2px_20px_rgba(0,0,0,0.5)]">
         {navItems.map((item) => {
           const isActive = pathname === item.path;
           return (
@@ -256,7 +256,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         })}
       </nav>
 
-      <main className="pt-[78px] px-4 max-w-[860px] mx-auto animate-[fadeUp_0.22s_ease]">
+      <main className="pt-[78px] px-4 max-w-[860px] mx-auto animate-slideUp">
         <div id="current-user-data" data-username={userInfo?.username || ''} data-role={userInfo?.role || ''} className="hidden" />
         {children}
       </main>

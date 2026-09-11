@@ -1,8 +1,9 @@
 {
-  "name": "Clash War Tracker",
+  "name": "Clan War Tracker",
   "short_name": "War Tracker",
-  "description": "App per la gestione della Guerra tra Clan di Clash Royale",
-  "start_url": "/",
+  "description": "Traccia la partecipazione del clan alle Guerre di Clash Royale",
+  "start_url": "/dashboard",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#080815",
   "theme_color": "#080815",
@@ -20,10 +21,44 @@
       "purpose": "any maskable"
     }
   ],
-  "scope": "/",
   "display_override": [
     "window-controls-overlay",
     "standalone",
     "minimal-ui"
+  ],
+  "shortcuts": [
+    {
+      "name": "Guerra",
+      "short_name": "Guerra",
+      "url": "/dashboard",
+      "icons": [
+        {
+          "src": "/icon.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Radar Nemici",
+      "short_name": "Radar",
+      "url": "/dashboard/radar",
+      "icons": [
+        {
+          "src": "/icon.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Classifiche",
+      "short_name": "Mazzi",
+      "url": "/dashboard/leaderboard",
+      "icons": [
+        {
+          "src": "/icon.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
   ]
 }
