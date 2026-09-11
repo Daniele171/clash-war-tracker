@@ -9,7 +9,7 @@ export default function RadarPage() {
   useEffect(() => {
     fetch('/api/sync')
       .then(res => res.json())
-      .then(() => fetch('/api/wars/live'))
+      .then(() => fetch('/api/wars'))
       .then(res => res.json())
       .then(data => {
         if (data && data.clans) {
