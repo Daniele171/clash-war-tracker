@@ -1,11 +1,12 @@
 'use client';
 
-export const APP_VERSION = 'v3.0';
+export const APP_VERSION = 'v3.1';
 
 const PATCH_NOTES = [
-  { icon: '📱', text: 'Nuova App Nativa (PWA): Ora puoi scaricare il sito come una vera App su Android e iPhone per un\'esperienza a schermo intero!' },
-  { icon: '✨', text: 'Nuova Veste Grafica: Design "serio" e pulito. Addio neon e grafiche eccessive, benvenuta fluidità professionale.' },
-  { icon: '🌅', text: 'Nuovo Messaggio Bot: "Avviso Inizio Giornata". Il bot ora avvisa automaticamente se è il giorno di Allenamento o di Battaglia appena inizia la nuova giornata di guerra!' }
+  { icon: '⛵', text: 'Radar Nemici: Traccia in tempo reale i punteggi di tutte le 5 barche in gara per capire a che velocità stiamo andando rispetto agli avversari.' },
+  { icon: '🏆', text: 'Wall of Fame & Shame: Da oggi il sito accumulerà le statistiche di guerra di ogni giocatore per creare una classifica mensile dei migliori (e dei peggiori).' },
+  { icon: '🃏', text: 'Migliori Mazzi: Una nuova sezione che spia automaticamente i mazzi vincenti dei nostri migliori giocatori pronti per essere copiati.' },
+  { icon: '📱', text: 'Web App a schermo intero: Puoi aggiungere il sito alla schermata Home del tuo smartphone (Android e iPhone) per un\'esperienza a schermo intero.' }
 ];
 
 export default function PatchNotesModal({ onDone }: { onDone: () => void }) {
