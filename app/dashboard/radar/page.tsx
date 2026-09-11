@@ -4,18 +4,17 @@ import { useEffect, useState } from 'react';
 
 export default function RadarPage() {
   const [clans, setClans] = useState<any[]>([]);
+  const [ourClanTag, setOurClanTag] = useState<string>('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/sync')
-      .then(res => res.json())
-      .then(() => fetch('/api/wars'))
+    fetch('/api/wars')
       .then(res => res.json())
       .then(data => {
-        if (data && data.clans) {
-          // Sort by periodPoints then by fame
+        if (data && data.clans && data.clans.length > 0) {
           const sortedClans = [...data.clans].sort((a, b) => b.periodPoints - a.periodPoints || b.fame - a.fame);
           setClans(sortedClans);
+          if (data.ourClanTag) setOurClanTag(data.ourClanTag);
         }
         setLoading(false);
       })
@@ -46,7 +45,7 @@ export default function RadarPage() {
 
       <div className="flex flex-col gap-4">
         {clans.map((clan, index) => {
-          const isUs = index === clans.findIndex(c => c.name === 'I Lupi Rossi'); // Adjust if clan name differs
+          const isUs = ourClanTag ? clan.tag === ourClanTag : index === 0;
           const percentage = maxPoints > 0 ? (clan.periodPoints / maxPoints) * 100 : 0;
           
           return (

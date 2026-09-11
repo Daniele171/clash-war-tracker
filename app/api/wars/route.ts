@@ -20,6 +20,7 @@ export async function GET() {
       missedDecksByTag[p.tag] = [];
     });
 
+    // Method 1: Use stored snapshots (historical days already finalized)
     snapshots.forEach(snap => {
       if (snap.periodType === 'training') return;
 
@@ -35,6 +36,29 @@ export async function GET() {
       });
     });
 
+    // Method 2: If no snapshots (first few days), estimate from decksUsedTotal
+    // The CR API gives us decksUsedTotal (whole season) and decksUsedToday
+    // previousDays = decksUsed - decksUsedToday
+    // expectedPreviousDays = (battleDay - 1) * 4
+    // missedPrevious = max(0, expectedPreviousDays - previousDays)
+    const currentBattleDay = liveWar.battleDay || 0;
+    const isWarPeriod = liveWar.periodType !== 'training';
+    
+    if (isWarPeriod && currentBattleDay > 1 && snapshots.length === 0) {
+      liveWar.participants.forEach(p => {
+        const decksUsedToday = p.decksUsedToday || 0;
+        const decksUsedTotal = p.decksUsedTotal || 0;
+        const decksInPreviousDays = decksUsedTotal - decksUsedToday;
+        const expectedInPreviousDays = (currentBattleDay - 1) * 4;
+        const missedInPreviousDays = Math.max(0, expectedInPreviousDays - decksInPreviousDays);
+        
+        if (missedInPreviousDays > 0) {
+          // We can't know exactly which day they missed, mark it as "giorni precedenti"
+          missedDecksByTag[p.tag] = [{ day: currentBattleDay - 1, missed: missedInPreviousDays }];
+        }
+      });
+    }
+
     // Get historical stats for excuses
     const stats = await getClanStats();
 
@@ -46,7 +70,12 @@ export async function GET() {
       lastExcusedDate: stats[p.tag]?.lastExcusedDate || null
     }));
 
-    return apiSuccess({ ...liveWar, participants: enrichedParticipants });
+    return apiSuccess({ 
+      ...liveWar, 
+      participants: enrichedParticipants,
+      ourClanTag: process.env.CLAN_TAG || '',
+      clans: liveWar.clans || []
+    });
   } catch (error) {
     return handleApiError(error);
   }

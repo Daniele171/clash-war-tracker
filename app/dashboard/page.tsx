@@ -386,7 +386,14 @@ export default function WarTab() {
                               </span>
                             )}
                           </div>
-                          <div className="text-[10px] text-[#444466] font-mono group-hover:text-[#666688] transition-colors">{p.tag}</div>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <div className="text-[10px] text-[#444466] font-mono group-hover:text-[#666688] transition-colors">{p.tag}</div>
+                            {p.missedDaysBreakdown && p.missedDaysBreakdown.length > 0 && (
+                              <span className="text-[9px] font-bold bg-red-900/60 text-red-400 border border-red-500/40 px-1.5 py-0.5 rounded-sm whitespace-nowrap">
+                                ❌ -{p.missedDaysBreakdown.reduce((sum: number, d: any) => sum + d.missed, 0)} mazzi persi
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </td>
