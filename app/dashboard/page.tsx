@@ -136,6 +136,7 @@ export default function WarTab() {
   const handleCopyReport = () => {
     const absents = [...participants].filter((p: any) => p.status === 'absent').sort((a: any, b: any) => a.name.localeCompare(b.name));
     const partials = [...participants].filter((p: any) => p.status === 'partial').sort((a: any, b: any) => a.name.localeCompare(b.name));
+    const excused = [...participants].filter((p: any) => p.status === 'excused').sort((a: any, b: any) => a.name.localeCompare(b.name));
     const isTraining = data?.periodType === 'training';
 
     let report = isTraining ? '🛡️ *REPORT ALLENAMENTO* 🛡️\n\n' : '⚠️ *REPORT GUERRA FLUVIALE* ⚠️\n\n';
@@ -146,17 +147,26 @@ export default function WarTab() {
       report += `✅ ${participantsCount} membri hanno già fatto almeno un attacco di prova.\n`;
     } else {
       if (absents.length > 0) {
-        report += '❌ *ASSENTI TOTALI (0/4 mazzi):*\n';
+        report += '❌ *ASSENTI (ZERO ATTACCHI):*\n';
         absents.forEach((p: any) => {
-          report += `- ${p.name}\n`;
+          report += `- ${p.name} (0/4)\n`;
         });
         report += '\n';
       }
 
       if (partials.length > 0) {
-        report += '⚠️ *PARZIALI (Non hanno finito):*\n';
+        report += '⚠️ *ATTACCHI INCOMPLETI (GRAVE):*\n';
         partials.forEach((p: any) => {
-          report += `- ${p.name} (${p.decksUsedToday}/4 mazzi)\n`;
+          const mancanti = 4 - p.decksUsedToday;
+          report += `- ${p.name}: ❌ MANCANO ${mancanti} MAZZI (Fatti solo ${p.decksUsedToday}/4)\n`;
+        });
+        report += '\n';
+      }
+
+      if (excused.length > 0) {
+        report += '🔔 *GIUSTIFICATI:*\n';
+        excused.forEach((p: any) => {
+          report += `- ${p.name} (${p.excuseReason || 'Giustificato'})\n`;
         });
         report += '\n';
       }
@@ -164,7 +174,7 @@ export default function WarTab() {
       if (absents.length === 0 && partials.length === 0) {
         report += '✅ Tutti i membri hanno completato gli attacchi! Grandissimi! 🏆\n';
       } else {
-        report += '@everyone per favore fate gli attacchi! ⚔️\n';
+        report += '‼️ @everyone MANCANO ANCORA ATTACCHI IMPORTANTI! ‼️\nEntrate subito a finire i mazzi! ⚔️\n';
       }
     }
 

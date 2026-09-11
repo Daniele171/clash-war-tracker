@@ -24,7 +24,7 @@ export interface WarSnapshot {
   seasonId: number;
   sectionIndex: number;
   battleDay: number;
-  periodType: 'training' | 'combat' | 'colosseum';
+  periodType: 'training' | 'combat' | 'colosseum' | 'warDay';
   timestamp: string;
   clans?: {
     tag: string;
