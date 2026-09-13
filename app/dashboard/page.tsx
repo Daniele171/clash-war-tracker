@@ -78,7 +78,7 @@ export default function WarTab() {
   );
 
   if (data?.error) return (
-    <div className="text-center py-12 px-6 bg-[rgba(220,38,38,0.1)] border border-red-500 rounded-xl animate-[fadeUp_0.4s_ease]">
+    <div className="text-center py-12 px-6 bg-[rgba(220,38,38,0.1)] border border-red-500 rounded-xl animate-slideUp">
       <div className="text-[48px] mb-4 block">🚨</div>
       <div className="font-rajdhani text-[20px] font-bold text-red-400 mb-2">Errore di Sistema</div>
       <div className="text-[13px] text-red-300 mb-4">{data.error}</div>
@@ -86,7 +86,7 @@ export default function WarTab() {
   );
 
   if (!data || data.status) return (
-    <div className="text-center py-16 px-6 text-[#8888a8] animate-[fadeUp_0.4s_ease]">
+    <div className="text-center py-16 px-6 text-[#8888a8] animate-slideUp">
       <div className="relative inline-block mb-6">
         <span className="text-[64px] opacity-30 block animate-[float_3s_ease-in-out_infinite]">🏁</span>
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(240,192,48,0.1)_0%,transparent_70%)] rounded-full" />
@@ -228,7 +228,7 @@ export default function WarTab() {
   };
 
   return (
-    <div className="animate-[fadeUp_0.3s_ease]">
+    <div className="animate-slideUp">
       {selectedPlayer && (
         <PlayerModal tag={selectedPlayer} onClose={() => setSelectedPlayer(null)} />
       )}
@@ -257,7 +257,7 @@ export default function WarTab() {
 
       {/* Missing Decks Highlight (if any) */}
       {missingDecksPlayers.length > 0 && (
-        <div className="mb-6 rounded-xl border border-[rgba(234,88,12,0.3)] bg-[rgba(234,88,12,0.05)] overflow-hidden animate-[slideUp_0.4s_ease]">
+        <div className="mb-6 rounded-xl border border-[rgba(234,88,12,0.3)] bg-[rgba(234,88,12,0.05)] overflow-hidden animate-slideUp">
           <div className="bg-[rgba(234,88,12,0.15)] px-4 py-2.5 flex items-center gap-2 border-b border-[rgba(234,88,12,0.2)]">
             <span className="text-xl animate-pulse">⚠️</span>
             <span className="font-rajdhani text-[16px] font-bold text-[#fb923c] uppercase tracking-wide">
@@ -270,7 +270,7 @@ export default function WarTab() {
               return (
                 <div 
                   key={`miss-${p.tag}`} 
-                  onClick={() => setSelectedPlayer(p.tag)}
+                  onClick={() => { console.log('Clicked row!', p.tag); setSelectedPlayer(p.tag); }}
                   className="flex items-center justify-between p-2 rounded-lg hover:bg-[rgba(255,255,255,0.05)] cursor-pointer transition-colors"
                 >
                   <div className="flex items-center gap-2">
@@ -359,7 +359,7 @@ export default function WarTab() {
                 return (
                   <tr
                     key={p.tag}
-                    onClick={() => setSelectedPlayer(p.tag)}
+                    onClick={() => { console.log('Clicked row!', p.tag); setSelectedPlayer(p.tag); }}
                     className={`animate-rowEnter border-b border-[rgba(255,255,255,0.03)] transition-all cursor-pointer group
                       ${isMe
                         ? 'bg-[rgba(240,192,48,0.08)] hover:bg-[rgba(240,192,48,0.12)] shadow-[inset_0_0_0_1px_rgba(240,192,48,0.3)]'
@@ -387,7 +387,7 @@ export default function WarTab() {
                             )}
                           </div>
                           <div className="flex items-center gap-2 mt-0.5">
-                            <div className="text-[10px] text-[#444466] font-mono group-hover:text-[#666688] transition-colors">{p.tag}</div>
+                            <div className="text-[10px] text-[#8888a8] font-mono group-hover:text-[#a0a0c0] transition-colors">{p.tag}</div>
                             {p.missedDaysBreakdown && p.missedDaysBreakdown.length > 0 && (
                               <span className="text-[9px] font-bold bg-red-900/60 text-red-400 border border-red-500/40 px-1.5 py-0.5 rounded-sm whitespace-nowrap">
                                 ❌ -{p.missedDaysBreakdown.reduce((sum: number, d: any) => sum + d.missed, 0)} mazzi persi

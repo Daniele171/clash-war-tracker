@@ -43,10 +43,11 @@ export function determineStatus(decksUsedToday: number, isWarDay: boolean, isDay
 
 export function buildWarSnapshot(race: CRRiverRace, allMembers: any[], isDayClosed = false, existingExcuses: Record<string, string> = {}): WarSnapshot {
   const dayOfWeek = race.periodIndex % 7;
-  const isWarDay = (race.periodType === 'combat' || race.periodType === 'colosseum' || race.periodType === 'warDay') && dayOfWeek >= 3;
+  const isWarDay = race.periodType === 'warDay' || race.periodType === 'combat' || race.periodType === 'colosseum';
   // Battle day 1-4 based on periodIndex (which goes 0-6).
   // Assuming 0,1,2 = training, 3,4,5,6 = combat (battleDay 1,2,3,4)
-  const battleDay = isWarDay ? (dayOfWeek - 3) + 1 : 0;
+  // periodIndex 3,4,5,6 -> battleDay 1,2,3,4
+  const battleDay = isWarDay ? Math.max(1, (race.periodIndex % 7) - 2) : 0;
   
   let clansData: any[] = [];
   if (race.clans && Array.isArray(race.clans)) {

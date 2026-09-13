@@ -57,7 +57,7 @@ export async function GET(request: Request) {
     }
 
     // 4. Determine if day just closed
-    const isWarPeriod = race.periodType === 'combat' || race.periodType === 'colosseum';
+    const isWarPeriod = race.periodType === 'warDay' || race.periodType === 'combat' || race.periodType === 'colosseum';
     const dayOfWeek = race.periodIndex % 7;
     const currentBattleDay = isWarPeriod && dayOfWeek >= 3 ? (dayOfWeek - 3) + 1 : 0;
     const previousPeriod = liveWar ? liveWar.battleDay : -1;
