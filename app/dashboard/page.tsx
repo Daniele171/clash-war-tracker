@@ -99,7 +99,7 @@ export default function WarTab() {
   const participants = data.participants || [];
   const total = participants.length;
   const participated = participants.filter((p: any) => p.decksUsedToday > 0).length;
-  const badCount = participants.filter((p: any) => p.status === 'absent').length;
+  const badCount = participants.filter((p: any) => p.status === 'absent' || p.status === 'partial').length;
   const totalMedals = participants.reduce((sum: number, p: any) => sum + (p.medals || 0), 0);
   const rate = total > 0 ? Math.round((participated / total) * 100) : 0;
   const rateColor = rate >= 80 ? '#4ade80' : rate >= 50 ? '#fb923c' : '#f87171';
@@ -355,6 +355,7 @@ export default function WarTab() {
                 else if (p.status === 'absent') { badgeLabel = '❌ Assente'; badgeClass = 'bg-[rgba(220,38,38,0.15)] border-[rgba(220,38,38,0.5)] text-[#f87171] shadow-[0_0_10px_rgba(220,38,38,0.2)]'; }
                 else if (p.status === 'pending') { badgeLabel = '⏳ Attesa'; badgeClass = 'bg-[rgba(234,88,12,0.15)] border-[rgba(234,88,12,0.4)] text-[#fb923c]'; }
                 else if (p.status === 'excused') { badgeLabel = '🔔 Giust.'; badgeClass = 'bg-[rgba(217,119,6,0.15)] border-[rgba(217,119,6,0.4)] text-[#fbbf24]'; }
+                else if (p.status === 'training') { badgeLabel = '🛡️ Allena.'; badgeClass = 'bg-[rgba(99,102,241,0.15)] border-[rgba(99,102,241,0.4)] text-[#a78bfa]'; }
 
                 return (
                   <tr

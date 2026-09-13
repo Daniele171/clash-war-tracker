@@ -29,16 +29,15 @@ export interface CRRiverRace {
 }
 
 export function determineStatus(decksUsedToday: number, isWarDay: boolean, isDayClosed: boolean): WarSnapshot['participants'][0]['status'] {
-  if (!isWarDay) return 'ok'; // Training days don't penalize
-  
-  if (decksUsedToday >= 4) return 'ok';
-  
-  if (decksUsedToday > 0) return 'partial'; // Played some, but not all
-  
-  // 0 decks used
-  if (isDayClosed) return 'absent'; // Day is over, they missed it
-  
-  return 'pending'; // Day is still ongoing
+  if (!isWarDay) {
+    // Training day: not mandatory. Show 'ok' only if they actually attacked voluntarily.
+    return decksUsedToday > 0 ? 'ok' : 'training';
+  }
+
+  if (decksUsedToday >= 4) return 'ok';        // All 4 decks used ✅
+  if (decksUsedToday > 0) return 'partial';    // Used some, not all ⚠️
+  if (isDayClosed) return 'absent';             // Day ended, missed it ❌
+  return 'pending';                             // Day still ongoing, hasn't played yet ⏳
 }
 
 export function buildWarSnapshot(race: CRRiverRace, allMembers: any[], isDayClosed = false, existingExcuses: Record<string, string> = {}): WarSnapshot {

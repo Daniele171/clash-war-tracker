@@ -75,7 +75,12 @@ export async function GET(request: Request) {
         timestamp: new Date().toISOString(),
         participants: liveWar.participants.map(p => ({
           ...p,
-          status: p.status === 'excused' ? 'excused' : p.decksUsedToday === 0 ? 'absent' : (p.decksUsedToday < 4 ? 'partial' : 'ok')
+          status: p.status === 'excused' ? 'excused'
+              : liveWar.periodType === 'training'
+                ? (p.decksUsedToday > 0 ? 'ok' : 'training')
+                : p.decksUsedToday === 0 ? 'absent'
+                : p.decksUsedToday < 4 ? 'partial'
+                : 'ok'
         }))
       } as any;
       
