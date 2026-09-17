@@ -114,6 +114,8 @@ export default function SettingsTab() {
         setTgChatId(data.chatId || '');
           if (data.enableDailyReport !== undefined) setEnableDailyReport(data.enableDailyReport);
           if (data.enableHourlyWarning !== undefined) setEnableHourlyWarning(data.enableHourlyWarning);
+        if (data.enableStartMessage !== undefined) setEnableStartMessage(data.enableStartMessage);
+        setCustomStartMessage(data.customStartMessage || '');
           setCustomWarningMessage(data.customWarningMessage || '');
       }
     } catch (e) {}
@@ -512,6 +514,22 @@ export default function SettingsTab() {
                           value={customWarningMessage}
                           onChange={e => setCustomWarningMessage(e.target.value)}
                           placeholder="es. ⚠️ SVEGLIA! Manca solo 1 ora!"
+                          className="bg-[#080815] border border-[#333344] rounded-lg px-3 py-2 text-[13px] text-white placeholder-[#555575] focus:outline-none focus:border-cr-gold transition-colors"
+                        />
+                      </div>
+                    )}
+                    <label className="flex items-center gap-3 cursor-pointer mt-3">
+                      <input type="checkbox" checked={enableStartMessage} onChange={() => setEnableStartMessage(!enableStartMessage)} className="w-4 h-4 text-cr-gold rounded bg-[#080815] border-[#333344]" />
+                      <span className="text-[13px] text-white">Abilita Messaggio Inizio Giornata (10:01)</span>
+                    </label>
+                    {enableStartMessage && (
+                      <div className="flex flex-col gap-1 mt-1">
+                        <label className="text-[10px] text-[#8888a8] uppercase tracking-wider">Messaggio Personalizzato (Opzionale)</label>
+                        <input
+                          type="text"
+                          value={customStartMessage}
+                          onChange={e => setCustomStartMessage(e.target.value)}
+                          placeholder="es. Buongiorno clan! Iniziata la guerra!"
                           className="bg-[#080815] border border-[#333344] rounded-lg px-3 py-2 text-[13px] text-white placeholder-[#555575] focus:outline-none focus:border-cr-gold transition-colors"
                         />
                       </div>

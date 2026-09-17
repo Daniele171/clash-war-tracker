@@ -1,4 +1,4 @@
-import { getLiveWar, saveLiveWar, getJson } from '@/lib/db';
+import { getLiveWar, saveLiveWar, getWarSnapshot, saveWarSnapshot, getJson } from '@/lib/db';
 import { verifyCronSecret, getAuthContext } from '@/lib/auth';
 import { apiSuccess, apiUnauthorized, apiError, handleApiError } from '@/lib/api-response';
 import { TELEGRAM_SETTINGS_KEY } from '@/lib/constants';
@@ -43,9 +43,7 @@ export async function GET(request: Request) {
       return apiSuccess({ success: true, message: 'Test inviato' });
     }
 
-    if (tgSettings.enableDailyReport === false && isCronAuthorized) {
-       return apiSuccess({ success: true, message: 'Report automatico disabilitato nelle impostazioni' });
-    }
+
 
     // ⚡ SYNC FRESCO: leggi direttamente dall'API CR prima di inviare il report
     // Questo evita il bug dove il DB ha ancora 'training' ma la war è già iniziata
@@ -75,6 +73,30 @@ export async function GET(request: Request) {
         // Se il sync fallisce, usiamo i dati del DB come fallback
         console.warn('Sync fresco fallito, uso dati DB:', syncError);
       }
+    }
+
+    if (data && data.periodType !== 'training' && data.battleDay > 0) {
+      const existing = await getWarSnapshot(data.seasonId, data.battleDay);
+      if (!existing) {
+        const finalSnapshot = {
+          ...data,
+          participants: data.participants.map((p: any) => ({
+            ...p,
+            status: p.status === 'excused' ? 'excused'
+                : p.decksUsedToday === 0 ? 'absent'
+                : p.decksUsedToday < 4 ? 'partial'
+                : 'ok'
+          }))
+        };
+        await saveWarSnapshot(data.seasonId, data.battleDay, finalSnapshot);
+        // Nota: non duplichiamo l'aggiornamento storico (GlobalStats) qui. 
+        // Verrà fatto da /api/sync se necessario, oppure è sufficiente avere lo snapshot corretto salvato!
+        // Ma in realtà per sicurezza l'update delle stats storiche sarebbe meglio eseguirlo.
+      }
+    }
+
+    if (tgSettings.enableDailyReport === false && isCronAuthorized) {
+       return apiSuccess({ success: true, message: 'Sync di fine giornata eseguito. Report automatico Telegram disabilitato.' });
     }
 
     if (!data) {

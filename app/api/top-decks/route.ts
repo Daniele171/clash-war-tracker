@@ -5,8 +5,14 @@ import { handleApiError, apiSuccess } from '@/lib/api-response';
 
 export const revalidate = 14400; // Cache for 4 hours (Next.js App Router cache)
 
+import { getAuthContext } from '@/lib/auth';
+
 export async function GET() {
   try {
+    const auth = await getAuthContext();
+    if (!auth || !auth.user) {
+      return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
+    }
     const liveWar = await getLiveWar();
     const stats = await getClanStats();
 

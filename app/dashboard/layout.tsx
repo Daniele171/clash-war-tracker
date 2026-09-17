@@ -49,7 +49,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     if (autoSyncDone.current) return;
     autoSyncDone.current = true;
     try {
-      const res = await fetch('/api/sync/all', { method: 'GET' });
+      const res = await fetch('/api/sync/public', { method: 'GET' });
       if (res.ok) {
         const data = await res.json();
         if (data.updated) {
