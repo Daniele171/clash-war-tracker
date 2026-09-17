@@ -245,7 +245,7 @@ export default function WarTab() {
         {[
           { value: `${participated}/${total}`, label: 'Partecipati', color: 'text-cr-gold' },
           { value: `${rate}%`, label: '% Presenti', color: rateColor },
-          { value: badCount, label: 'Assenti', color: '#f87171' },
+          { value: badCount, label: 'Da completare', color: '#f87171' },
           { value: totalMedals.toLocaleString(), label: 'Medaglie tot', color: 'text-cr-gold' },
         ].map((stat, i) => (
           <div key={i} className="stat-card bg-[rgba(255,255,255,0.03)] border border-[rgba(240,192,48,0.1)] rounded-xl p-3.5 text-center cursor-default" style={{ animationDelay: `${i * 0.1}s` }}>
@@ -268,7 +268,7 @@ export default function WarTab() {
           <div className="bg-[rgba(234,88,12,0.15)] px-4 py-2.5 flex items-center gap-2 border-b border-[rgba(234,88,12,0.2)]">
             <span className="text-xl animate-pulse">⚠️</span>
             <span className="font-rajdhani text-[16px] font-bold text-[#fb923c] uppercase tracking-wide">
-              Giocatori Inadempienti ({missingDecksPlayers.length})
+              {sectionTitle} ({missingDecksPlayers.length})
             </span>
           </div>
           <div className="p-2 flex flex-col gap-1 max-h-[160px] overflow-y-auto">

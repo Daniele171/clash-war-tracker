@@ -5,7 +5,7 @@ import WelcomeModal from '@/components/WelcomeModal';
 import PatchNotesModal, { APP_VERSION } from '@/components/PatchNotesModal';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { MASTER_ADMIN_EMAIL } from '@/lib/constants';
 
 interface UserInfo {

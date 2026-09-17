@@ -68,7 +68,7 @@ function LoginForm() {
         </div>
 
         <InstallPrompt />
-        <div className="bg-[#18181b]/50 backdrop-blur-2xl rounded-2xl p-8 shadow-2xl border border-white/[0.08] animate-slideUp-delayed">
+        <div className="bg-[#18181b]/50 backdrop-blur-2xl rounded-2xl p-8 shadow-2xl border border-white/[0.08] animate-slideUpDelayed">
           <form onSubmit={handleLogin} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
               <label className="text-[11px] font-rajdhani font-bold text-[#a0a0c0] uppercase tracking-wider pl-1">Email</label>
