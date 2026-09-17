@@ -14,7 +14,7 @@ export default function Toast({ message, type, onDone }: { message: string; type
 
   return (
     <div
-      className={`fixed bottom-[72px] left-1/2 -translate-x-1/2 z-[180] px-4 py-2.5 rounded-xl border text-[13px] font-semibold shadow-lg animate-[slideUp_0.3s_ease] whitespace-nowrap ${colors[type]}`}
+      className={`fixed bottom-[calc(72px+env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 z-[180] px-4 py-2.5 rounded-xl border text-[13px] font-semibold shadow-lg animate-[slideUp_0.3s_ease] whitespace-nowrap ${colors[type]}`}
     >
       {message}
     </div>

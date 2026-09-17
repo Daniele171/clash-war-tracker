@@ -184,7 +184,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   ];
 
   return (
-    <div className="pb-20">
+    <div className="pb-0">
       {/* Modals */}
       {showWelcome && userInfo && (
         <WelcomeModal user={userInfo} onDone={handleWelcomeDone} />
@@ -197,7 +197,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       )}
 
       {/* Top Header */}
-      <header className="fixed top-0 left-0 right-0 h-[62px] bg-[#080815]/90 backdrop-blur-md border-b border-border-gold z-50 shadow-[0_2px_20px_rgba(0,0,0,0.5)]">
+      <header className="fixed top-0 left-0 right-0 h-[calc(62px+env(safe-area-inset-top))] pt-[env(safe-area-inset-top)] bg-[#080815]/90 backdrop-blur-md border-b border-border-gold z-50 shadow-[0_2px_20px_rgba(0,0,0,0.5)]">
         <div className="max-w-[860px] h-full mx-auto px-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="text-2xl drop-shadow-[0_0_10px_rgba(240,192,48,0.6)] animate-[float_3s_ease-in-out_infinite]">⚔️</div>
@@ -256,7 +256,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         })}
       </nav>
 
-      <main className="pt-[78px] px-4 max-w-[860px] mx-auto animate-slideUp">
+      <main className="pt-[calc(78px+env(safe-area-inset-top))] px-4 max-w-[860px] mx-auto animate-slideUp pb-[calc(24px+env(safe-area-inset-bottom))]">
         <div id="current-user-data" data-username={userInfo?.username || ''} data-role={userInfo?.role || ''} className="hidden" />
         {children}
       </main>
