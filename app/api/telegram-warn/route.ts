@@ -42,11 +42,12 @@ export async function GET(request: Request) {
     }
 
     const participants = data.participants || [];
-    const absents = [...participants].filter((p: any) => p.status === 'absent');
+    const absents = [...participants].filter((p: any) => p.status === 'absent' || p.status === 'pending');
     const partials = [...participants].filter((p: any) => p.status === 'partial');
+    const missing = [...participants].filter((p: any) => (p.status === 'pending' || p.status === 'partial' || p.status === 'absent') && p.status !== 'excused');
 
-    // Se tutti hanno fatto gli attacchi, non inviamo nulla
-    if (absents.length === 0 && partials.length === 0) {
+    // Se tutti hanno fatto gli attacchi o sono giustificati, non inviamo nulla
+    if (missing.length === 0) {
       return apiSuccess({ success: true, message: 'Tutti hanno attaccato, nessun avviso necessario' });
     }
 

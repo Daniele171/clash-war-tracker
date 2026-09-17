@@ -131,7 +131,14 @@ export default function WarTab() {
     return sortDirection === 'asc' ? cmp : -cmp;
   });
 
+  const pendingPlayers = sorted.filter(p => p.status === 'pending');
   const missingDecksPlayers = sorted.filter(p => p.status === 'absent' || p.status === 'partial' || p.status === 'pending');
+  
+  const sectionTitle = data?.periodType === 'training' 
+    ? 'GIOCATORI IN ATTESA' 
+    : pendingPlayers.length > 10 
+      ? 'ANCORA DA INIZIARE' 
+      : 'GIOCATORI INADEMPIENTI';
 
   const handleCopyReport = () => {
     const absents = [...participants].filter((p: any) => p.status === 'absent').sort((a: any, b: any) => a.name.localeCompare(b.name));
