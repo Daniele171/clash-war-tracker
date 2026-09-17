@@ -61,12 +61,7 @@ export default function SettingsTab() {
   const [testingTg, setTestingTg] = useState(false);
 
   // Global Settings
-  
-  
-  
 
-  
-  
   const loadTgSettings = async () => {
     try {
       const res = await fetch('/api/settings');
@@ -74,11 +69,11 @@ export default function SettingsTab() {
         const data = await res.json();
         setTgToken(data.token || '');
         setTgChatId(data.chatId || '');
-          if (data.enableDailyReport !== undefined) setEnableDailyReport(data.enableDailyReport);
-          if (data.enableHourlyWarning !== undefined) setEnableHourlyWarning(data.enableHourlyWarning);
+        if (data.enableDailyReport !== undefined) setEnableDailyReport(data.enableDailyReport);
+        if (data.enableHourlyWarning !== undefined) setEnableHourlyWarning(data.enableHourlyWarning);
         if (data.enableStartMessage !== undefined) setEnableStartMessage(data.enableStartMessage);
         setCustomStartMessage(data.customStartMessage || '');
-          setCustomWarningMessage(data.customWarningMessage || '');
+        setCustomWarningMessage(data.customWarningMessage || '');
       }
     } catch (e) {}
   };

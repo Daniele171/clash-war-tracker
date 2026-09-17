@@ -1,12 +1,9 @@
-import { NextResponse } from 'next/server';
-import { apiUnauthorized } from '@/lib/api-response';
+import { apiUnauthorized, handleApiError, apiSuccess } from '@/lib/api-response';
+import { getAuthContext } from '@/lib/auth';
 import { getPlayerBattleLog } from '@/lib/cr-api';
 import { getLiveWar, getClanStats } from '@/lib/db';
-import { handleApiError, apiSuccess } from '@/lib/api-response';
 
 export const revalidate = 14400; // Cache for 4 hours (Next.js App Router cache)
-
-import { getAuthContext } from '@/lib/auth';
 
 export async function GET() {
   try {
