@@ -55,7 +55,7 @@ export async function GET() {
     // Set rate limit ONLY on success
     await setJson('cwt:sync:lastpublic', { ts: Date.now() });
 
-    return apiSuccess({ ok: true, message: 'Sync pubblico completato' });
+    return apiSuccess({ ok: true, updated: true, message: 'Sync pubblico completato' });
   } catch (error: any) {
     console.error('Public sync error:', error);
     return apiError(error.message);

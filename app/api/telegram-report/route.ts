@@ -1,4 +1,4 @@
-import { getLiveWar, saveLiveWar, getWarSnapshot, saveWarSnapshot, getJson } from '@/lib/db';
+import { getLiveWar, saveLiveWar, getWarSnapshot, saveWarSnapshot, updateHistoricalStats, getJson } from '@/lib/db';
 import { verifyCronSecret, getAuthContext } from '@/lib/auth';
 import { apiSuccess, apiUnauthorized, apiError, handleApiError } from '@/lib/api-response';
 import { TELEGRAM_SETTINGS_KEY } from '@/lib/constants';
@@ -89,13 +89,15 @@ export async function GET(request: Request) {
           }))
         };
         await saveWarSnapshot(data.seasonId, data.battleDay, finalSnapshot);
-        // Nota: non duplichiamo l'aggiornamento storico (GlobalStats) qui. 
-        // Verrà fatto da /api/sync se necessario, oppure è sufficiente avere lo snapshot corretto salvato!
-        // Ma in realtà per sicurezza l'update delle stats storiche sarebbe meglio eseguirlo.
+        // Aggiorniamo le stats storiche subito, così /api/sync non dovrà farlo
+        await updateHistoricalStats(finalSnapshot);
       }
     }
 
     if (tgSettings.enableDailyReport === false && isCronAuthorized) {
+       // NOTA: Anche se il report Telegram è disabilitato, il cron triggererà comunque questa route,
+       // che eseguirà il "Sync fresco" (linea 41) per chiudere il giorno e aggiornare DB e statistiche.
+       // Questo side-effect è voluto: il report serve anche come "end of day marker" per il backend.
        return apiSuccess({ success: true, message: 'Sync di fine giornata eseguito. Report automatico Telegram disabilitato.' });
     }
 

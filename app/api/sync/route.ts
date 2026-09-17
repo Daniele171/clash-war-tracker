@@ -1,5 +1,5 @@
 import { getCurrentRiverRace, getClanMembers } from '@/lib/cr-api';
-import { getLiveWar, saveLiveWar, saveWarSnapshot, getWarSnapshot, getMembers, saveMembers, getClanStats, saveClanStats } from '@/lib/db';
+import { getLiveWar, saveLiveWar, saveWarSnapshot, updateHistoricalStats, getWarSnapshot, getMembers, saveMembers, getClanStats, saveClanStats } from '@/lib/db';
 import { buildWarSnapshot } from '@/lib/war-utils';
 import { verifyCronSecret } from '@/lib/auth';
 import { apiSuccess, apiUnauthorized, apiError, handleApiError } from '@/lib/api-response';
@@ -91,32 +91,7 @@ export async function GET(request: Request) {
         await saveWarSnapshot(liveWar.seasonId, liveWar.battleDay, finalSnapshot);
   
         // Aggiornamento Statistiche Storiche (Wall of Fame)
-        try {
-          const stats = await getClanStats();
-          finalSnapshot.participants.forEach((p: any) => {
-            if (!stats[p.tag]) {
-              stats[p.tag] = { tag: p.tag, name: p.name, totalWars: 0, totalDecksUsed: 0, totalDecksExpected: 0, missedAttacks: 0, perfectDays: 0 };
-            }
-            // Non contare gli attacchi mancati se è stato scusato
-            const expected = p.status === 'excused' ? p.decksUsedToday : 4;
-            const missed = Math.max(0, expected - p.decksUsedToday);
-            
-            stats[p.tag].totalWars += 1;
-            stats[p.tag].totalDecksUsed += p.decksUsedToday;
-            stats[p.tag].totalDecksExpected += expected;
-            stats[p.tag].missedAttacks += missed;
-            if (p.decksUsedToday >= 4) {
-              stats[p.tag].perfectDays += 1;
-            }
-            if (p.status === 'excused') {
-              stats[p.tag].totalExcusedDays = (stats[p.tag].totalExcusedDays || 0) + 1;
-              stats[p.tag].lastExcusedDate = new Date().toISOString();
-            }
-          });
-          await saveClanStats(stats);
-        } catch (e) {
-          console.error('Failed to update clan stats', e);
-        }
+        await updateHistoricalStats(finalSnapshot);
       }
     }
 

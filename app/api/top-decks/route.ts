@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiUnauthorized } from '@/lib/api-response';
 import { getPlayerBattleLog } from '@/lib/cr-api';
 import { getLiveWar, getClanStats } from '@/lib/db';
 import { handleApiError, apiSuccess } from '@/lib/api-response';
@@ -11,7 +12,7 @@ export async function GET() {
   try {
     const auth = await getAuthContext();
     if (!auth || !auth.user) {
-      return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
+      return apiUnauthorized('Non autorizzato');
     }
     const liveWar = await getLiveWar();
     const stats = await getClanStats();
