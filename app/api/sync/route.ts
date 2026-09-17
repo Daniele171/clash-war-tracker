@@ -1,5 +1,5 @@
 import { getCurrentRiverRace, getClanMembers } from '@/lib/cr-api';
-import { getLiveWar, saveLiveWar, saveWarSnapshot, updateHistoricalStats, getWarSnapshot, getMembers, saveMembers, getClanStats, saveClanStats } from '@/lib/db';
+import { getLiveWar, saveLiveWar, saveWarSnapshot, updateHistoricalStats, getWarSnapshot, getMembers, saveMembers } from '@/lib/db';
 import { buildWarSnapshot } from '@/lib/war-utils';
 import { verifyCronSecret } from '@/lib/auth';
 import { apiSuccess, apiUnauthorized, apiError, handleApiError } from '@/lib/api-response';

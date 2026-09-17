@@ -60,8 +60,7 @@ export default function SettingsTab() {
   const [customStartMessage, setCustomStartMessage] = useState('');
   const [testingTg, setTestingTg] = useState(false);
 
-  // Global Settings
-
+  
   const loadTgSettings = async () => {
     try {
       const res = await fetch('/api/settings');

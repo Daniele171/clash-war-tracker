@@ -3,7 +3,7 @@ import { getAuthContext } from '@/lib/auth';
 import { getPlayerBattleLog } from '@/lib/cr-api';
 import { getLiveWar, getClanStats } from '@/lib/db';
 
-export const revalidate = 14400; // Cache for 4 hours (Next.js App Router cache)
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
