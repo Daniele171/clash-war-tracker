@@ -1,7 +1,9 @@
-import { getLiveWar, getJson } from '@/lib/db';
+import { getLiveWar, saveLiveWar, getJson } from '@/lib/db';
 import { verifyCronSecret, getAuthContext } from '@/lib/auth';
 import { apiSuccess, apiUnauthorized, apiError, handleApiError } from '@/lib/api-response';
 import { TELEGRAM_SETTINGS_KEY } from '@/lib/constants';
+import { getCurrentRiverRace, getClanMembers } from '@/lib/cr-api';
+import { buildWarSnapshot } from '@/lib/war-utils';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -45,7 +47,36 @@ export async function GET(request: Request) {
        return apiSuccess({ success: true, message: 'Report automatico disabilitato nelle impostazioni' });
     }
 
-    const data = await getLiveWar();
+    // ⚡ SYNC FRESCO: leggi direttamente dall'API CR prima di inviare il report
+    // Questo evita il bug dove il DB ha ancora 'training' ma la war è già iniziata
+    const clanTag = process.env.CLAN_TAG;
+    let data = await getLiveWar();
+
+    if (clanTag) {
+      try {
+        const race = await getCurrentRiverRace(clanTag);
+        if (race && race.clan) {
+          // Recupera le scuse esistenti
+          const existingExcuses: Record<string, string> = {};
+          if (data) {
+            data.participants.forEach((p: any) => {
+              if (p.status === 'excused' && p.excuseReason) {
+                existingExcuses[p.tag] = p.excuseReason;
+              }
+            });
+          }
+          const membersData = await getClanMembers(clanTag);
+          const apiMembers = membersData?.items || [];
+          const freshSnapshot = buildWarSnapshot(race, apiMembers, false, existingExcuses);
+          await saveLiveWar(freshSnapshot);
+          data = freshSnapshot;
+        }
+      } catch (syncError) {
+        // Se il sync fallisce, usiamo i dati del DB come fallback
+        console.warn('Sync fresco fallito, uso dati DB:', syncError);
+      }
+    }
+
     if (!data) {
       return apiError('Nessun dato di guerra live disponibile', 400);
     }
@@ -64,6 +95,9 @@ export async function GET(request: Request) {
       const participantsCount = participants.filter((p: any) => p.decksUsedToday > 0).length;
       report += `✅ ${participantsCount} membri hanno già fatto almeno un attacco di prova.\n`;
     } else {
+      const battleDay = (data as any).battleDay || '?';
+      report += `📅 *Giorno ${battleDay} di Combattimento*\n\n`;
+
       if (missing.length > 0) {
         report += '❌ *ANCORA DA GIOCARE (0/4 mazzi):*\n';
         missing.forEach((p: any) => {
@@ -83,7 +117,6 @@ export async function GET(request: Request) {
       if (missing.length === 0 && partials.length === 0) {
         report += '✅ Tutti i membri hanno completato gli attacchi! Grandissimi! 🏆\n';
       } else {
-        // Se mancano 40+ persone è probabile che la giornata sia appena resettata
         if (missing.length > 35) {
           report += 'La nuova giornata di guerra è appena iniziata! Buona fortuna a tutti! ⚔️\n';
         } else {
@@ -98,14 +131,14 @@ export async function GET(request: Request) {
     const res = await fetch(tgUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: chatId, text: report })
+      body: JSON.stringify({ chat_id: chatId, text: report, parse_mode: 'Markdown' })
     });
 
     if (!res.ok) {
       return apiError('Errore durante l\'invio a Telegram', 500, await res.text());
     }
 
-    return apiSuccess({ success: true, message: 'Report inviato su Telegram' });
+    return apiSuccess({ success: true, message: 'Report inviato su Telegram', periodType: data.periodType });
   } catch (error) {
     return handleApiError(error);
   }

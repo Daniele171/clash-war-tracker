@@ -60,12 +60,11 @@ export async function updateSession(request: NextRequest) {
     return supabaseResponse
   } catch (e) {
     console.error('Middleware Supabase Error:', e)
-    // If Supabase crashes, just redirect to login as fallback to clear bad state
-    if (!pathname.startsWith('/login')) {
-      const url = request.nextUrl.clone()
-      url.pathname = '/login'
-      return NextResponse.redirect(url)
-    }
+    // Su errori transitori Supabase (es. rete lenta su PWA mobile), NON redirigere al login.
+    // Il redirect causava il "double login": il cookie di sessione non era ancora propagato
+    // al momento del primo refresh, Supabase dava errore, e il catch mandava al login.
+    // Lasciamo passare la richiesta: se la sessione non c'è davvero, il prossimo
+    // tentativo del middleware la catturerà correttamente.
     return supabaseResponse
   }
 }

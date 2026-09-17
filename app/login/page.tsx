@@ -26,8 +26,9 @@ function LoginForm() {
         password,
       });
       if (error) throw error;
-      router.push('/dashboard');
-      router.refresh();
+      // Usa window.location per evitare double-login su PWA mobile
+      // (router.refresh() causava un secondo round-trip Supabase prima che il cookie fosse propagato)
+      window.location.href = '/dashboard';
     } catch {
       setError('Email o password non validi');
     } finally {

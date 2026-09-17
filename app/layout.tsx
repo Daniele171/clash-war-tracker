@@ -30,13 +30,27 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   icons: {
     icon: "/icon.png",
-    apple: "/icon.png",
+    // apple-touch-icon dedicata (180x180) per evitare la compenetrazione con la maschera iOS
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+    shortcut: "/icon.png",
   },
   appleWebApp: {
     capable: true,
+    // black-translucent: status bar trasparente, il contenuto va sotto la notch
+    // Serve viewportFit: "cover" nel viewport (già impostato)
     statusBarStyle: "black-translucent",
     title: "War Tracker",
-  }};
+  },
+  other: {
+    // Android Chrome PWA
+    "mobile-web-app-capable": "yes",
+    "application-name": "War Tracker",
+    // Impedisce zoom accidentale su iOS
+    "format-detection": "telephone=no",
+  },
+};
 
 export default function RootLayout({
   children,
