@@ -99,7 +99,7 @@ export default function WarTab() {
   const participants = data.participants || [];
   const total = participants.length;
   const participated = participants.filter((p: any) => p.decksUsedToday > 0).length;
-  const badCount = participants.filter((p: any) => p.status === 'absent' || p.status === 'partial').length;
+  const badCount = participants.filter((p: any) => p.status === 'absent' || p.status === 'partial' || p.status === 'pending').length;
   const totalMedals = participants.reduce((sum: number, p: any) => sum + (p.medals || 0), 0);
   const rate = total > 0 ? Math.round((participated / total) * 100) : 0;
   const rateColor = rate >= 80 ? '#4ade80' : rate >= 50 ? '#fb923c' : '#f87171';
@@ -131,7 +131,7 @@ export default function WarTab() {
     return sortDirection === 'asc' ? cmp : -cmp;
   });
 
-  const missingDecksPlayers = sorted.filter(p => p.status === 'absent' || p.status === 'partial');
+  const missingDecksPlayers = sorted.filter(p => p.status === 'absent' || p.status === 'partial' || p.status === 'pending');
 
   const handleCopyReport = () => {
     const absents = [...participants].filter((p: any) => p.status === 'absent').sort((a: any, b: any) => a.name.localeCompare(b.name));

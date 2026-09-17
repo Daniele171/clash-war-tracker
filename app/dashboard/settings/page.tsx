@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { formatDistanceToNow } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { MASTER_ADMIN_EMAIL } from '@/lib/constants';
 

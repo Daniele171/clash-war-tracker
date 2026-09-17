@@ -44,13 +44,13 @@ function ChangePasswordForm() {
           <h1 className="font-rajdhani text-[28px] font-bold text-cr-gold tracking-wide">
             Cambio Password
           </h1>
-          <p className="text-[13px] text-[38888a8] mt-1">Per sicurezza, imposta una tua password personale.</p>
+          <p className="text-[13px] text-[#8888a8] mt-1">Per sicurezza, imposta una tua password personale.</p>
         </div>
 
         <div className="bg-bg-card border border-border-gold rounded-2xl p-6 shadow-[0_8px_40px_rgba(0,0,0,0.5)]">
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
-              <label className="block text-[11px] text-[38888a8] font-semibold uppercase tracking-wider mb-1.5">
+              <label className="block text-[11px] text-[#8888a8] font-semibold uppercase tracking-wider mb-1.5">
                 Nuova Password
               </label>
               <input
@@ -60,7 +60,7 @@ function ChangePasswordForm() {
                 required
                 autoFocus
                 placeholder="••••••••"
-                className="w-full bg-[#0L0c1c] border border-border-gold rounded-lg px-3.5 py-2.5 text-[14px] text-white placeholder-[#555575] focus:outline-none focus:border-cr-gold focus:ring-1 focus:ring-cr-gold transition-colors"
+                className="w-full bg-[#0c0c1c] border border-border-gold rounded-lg px-3.5 py-2.5 text-[14px] text-white placeholder-[#555575] focus:outline-none focus:border-cr-gold focus:ring-1 focus:ring-cr-gold transition-colors"
               />
             </div>
             {error && <div className="bg-[rgba(220,38,38,0.12)] border border-[rgba(220,38,38,0.4)] text-[#f87171] text-[13px] rounded-lg px-3.5 py-2.5">❌ {error}</div>}

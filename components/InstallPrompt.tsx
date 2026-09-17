@@ -55,7 +55,7 @@ export default function InstallPrompt() {
 
   return (
     <>
-      <div className="w-full max-w-[340px] mx-auto mb-6 bg-gradient-to-r from-[rgba(240,192,48,0.15)] to-[rgba(124,58,237,0.15)] border border-cr-gold/30 rounded-xl p-4 flex items-center justify-between shadow-lg animate-slide-up">
+      <div className="w-full max-w-[340px] mx-auto mb-6 bg-gradient-to-r from-[rgba(240,192,48,0.15)] to-[rgba(124,58,237,0.15)] border border-cr-gold/30 rounded-xl p-4 flex items-center justify-between shadow-lg animate-slideUp">
         <div className="flex items-center gap-3">
           <div className="text-2xl drop-shadow-[0_0_10px_rgba(240,192,48,0.6)]">📲</div>
           <div className="text-left">

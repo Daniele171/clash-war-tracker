@@ -42,7 +42,7 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-[#09090b] relative overflow-hidden animate-fade-in">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-[#09090b] relative overflow-hidden animate-fadeIn">
       {/* Toast Notification */}
       <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-500 ${showToast ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 -translate-y-10 scale-95 pointer-events-none'}`}>
         <div className="bg-[#18181b]/80 backdrop-blur-xl border border-white/[0.08] shadow-2xl rounded-2xl px-6 py-4 flex items-center gap-3">
@@ -59,7 +59,7 @@ function LoginForm() {
       
 
       <div className="w-full max-w-[380px] z-10">
-        <div className="text-center mb-8 animate-slide-up">
+        <div className="text-center mb-8 animate-slideUp">
           <div className="text-[48px] drop-shadow-[0_0_20px_rgba(240,192,48,0.6)] animate-[float_3s_ease-in-out_infinite] mb-3">♔</div>
           <h1 className="font-rajdhani text-[32px] font-bold text-cr-gold tracking-wide text-glow-gold">
             Clan War Tracker
@@ -68,7 +68,7 @@ function LoginForm() {
         </div>
 
         <InstallPrompt />
-        <div className="bg-[#18181b]/50 backdrop-blur-2xl rounded-2xl p-8 shadow-2xl border border-white/[0.08] animate-slide-up-delayed">
+        <div className="bg-[#18181b]/50 backdrop-blur-2xl rounded-2xl p-8 shadow-2xl border border-white/[0.08] animate-slideUp-delayed">
           <form onSubmit={handleLogin} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
               <label className="text-[11px] font-rajdhani font-bold text-[#a0a0c0] uppercase tracking-wider pl-1">Email</label>
@@ -95,7 +95,7 @@ function LoginForm() {
                 className="bg-black/40 backdrop-blur-md border border-white/10 rounded-xl shadow-inner py-3.5 px-4 text-[15px] text-white placeholder-[#555575] focus:outline-none focus:ring-2 focus:ring-cr-gold/50 focus:border-cr-gold/50 transition-all tracking-widest font-mono"
               />
             </div>
-            {error && <div className="bg-[rgba(220,38,38,0.12)] border border-[rgba(220,38,38,0.4)] text-[#f87171] text-[13px] rounded-lg px-3.5 py-2.5 mt-1 animate-fade-in">❌ {error}</div>}
+            {error && <div className="bg-[rgba(220,38,38,0.12)] border border-[rgba(220,38,38,0.4)] text-[#f87171] text-[13px] rounded-lg px-3.5 py-2.5 mt-1 animate-fadeIn">❌ {error}</div>}
             
             <button type="submit" disabled={loading} className="w-full flex justify-center py-3.5 px-4 rounded-xl shadow-[0_0_15px_rgba(250,204,21,0.2)] text-sm font-bold text-[#080815] bg-gradient-to-r from-[#facc15] to-[#eab308] hover:from-[#eab308] hover:to-[#ca8a04] focus:outline-none transition-all disabled:opacity-50 mt-6 active:scale-95 hover:shadow-[0_0_30px_rgba(250,204,21,0.6)] shadow-[0_0_15px_rgba(250,204,21,0.3)] animate-pulse font-rajdhani tracking-wider text-[16px]">
               {loading ? '◳ Accesso...' : 'Entra →'}
