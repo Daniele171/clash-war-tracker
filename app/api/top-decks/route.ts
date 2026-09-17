@@ -1,7 +1,7 @@
 import { apiUnauthorized, handleApiError, apiSuccess } from '@/lib/api-response';
 import { getAuthContext } from '@/lib/auth';
 import { getPlayerBattleLog } from '@/lib/cr-api';
-import { getLiveWar, getClanStats } from '@/lib/db';
+import { getLiveWar, getClanStats, getJson, setJson } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,6 +10,14 @@ export async function GET() {
     const auth = await getAuthContext();
     if (!auth || !auth.user) {
       return apiUnauthorized('Non autorizzato');
+    }
+
+    const CACHE_KEY = 'cwt:top-decks:cache';
+    const CACHE_TTL = 4 * 60 * 60 * 1000; // 4 hours
+
+    const cached = await getJson(CACHE_KEY);
+    if (cached && Date.now() - cached.ts < CACHE_TTL) {
+      return apiSuccess(cached.data);
     }
     const liveWar = await getLiveWar();
     const stats = await getClanStats();
@@ -77,8 +85,10 @@ export async function GET() {
 
     // Return the top 6 unique winning decks
     const finalDecks = validDecks.sort((a, b) => b.time.localeCompare(a.time)).slice(0, 6);
+    const responseData = { decks: finalDecks, generatedAt: new Date().toISOString() };
 
-    return apiSuccess({ decks: finalDecks, generatedAt: new Date().toISOString() });
+    await setJson(CACHE_KEY, { ts: Date.now(), data: responseData });
+    return apiSuccess(responseData);
   } catch (error) {
     return handleApiError(error);
   }
